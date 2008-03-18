@@ -9,12 +9,16 @@
 (defpackage :cl-syntax-sugar
   (:use #:common-lisp :alexandria :metabang-bind :iterate)
 
-  (:export #:Λ
-           #:λ
-           #:α
-           #:β
-           #:γ
-           #:δ
-           #:ε
-           #:Σ
-           #:Π))
+  (:export
+   #:cl-source-file-with-readtable
+   #:system-with-readtable
+
+   #:Λ
+   #:λ
+   #:α
+   #:β
+   #:γ
+   #:δ
+   #:ε
+   #:Σ
+   #:Π))

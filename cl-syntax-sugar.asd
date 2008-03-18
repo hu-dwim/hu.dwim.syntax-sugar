@@ -22,12 +22,11 @@
   ((:module "src"
             :components ((:file "package")
                          (:file "duplicates" :depends-on ("package"))
+                         (:file "integration" :depends-on ("package" "duplicates"))
                          (:file "syntax-sugar" :depends-on ("duplicates"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
-                         (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
-                         ;;(:file "lambda" :depends-on ("duplicates" "syntax-sugar"))
-                         ))))
+                         (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
 
 (defsystem :cl-syntax-sugar-test
   :description "Tests for the cl-syntax-sugar system."
