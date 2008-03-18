@@ -23,6 +23,7 @@
             :components ((:file "package")
                          (:file "duplicates" :depends-on ("package"))
                          (:file "syntax-sugar" :depends-on ("duplicates"))
+                         (:file "readtime-wrapper" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          ;;(:file "lambda" :depends-on ("duplicates" "syntax-sugar"))
                          ))))
