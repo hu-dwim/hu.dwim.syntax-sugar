@@ -4,10 +4,10 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-user)
+(cl:in-package :cl-user)
 
 (defpackage :cl-syntax-sugar
-  (:use :common-lisp :alexandria :metabang-bind :iterate)
+  (:use #:common-lisp :alexandria :metabang-bind :iterate)
 
   (:export #:Λ
            #:λ

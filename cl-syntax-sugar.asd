@@ -23,7 +23,30 @@
             :components ((:file "package")
                          (:file "duplicates" :depends-on ("package"))
                          (:file "syntax-sugar" :depends-on ("duplicates"))
-                         (:file "readtime-wrapper" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
+                         (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          ;;(:file "lambda" :depends-on ("duplicates" "syntax-sugar"))
                          ))))
+
+(defsystem :cl-syntax-sugar-test
+  :description "Tests for the cl-syntax-sugar system."
+  :depends-on (:cl-syntax-sugar :stefil)
+  :components
+  ((:module "tests"
+            :serial t
+            :components ((:file "package")
+                         (:file "test-environment")
+                         (:file "readtime-wrapper")))))
+
+(defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
+  (operate 'load-op :cl-syntax-sugar-test)
+  (in-package :cl-syntax-sugar-test)
+  (declaim (optimize (debug 3)))
+  (warn "(declaim (optimize (debug 3))) was issued to help later C-c C-c'ing")
+  (eval (read-from-string "(progn
+                             (stefil:funcall-test-with-feedback-message 'test))"))
+  (values))
+
+(defmethod operation-done-p ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
+  nil)
+
