@@ -25,6 +25,7 @@
                          (:file "syntax-sugar" :depends-on ("duplicates"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
+                         (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          ;;(:file "lambda" :depends-on ("duplicates" "syntax-sugar"))
                          ))))
 
@@ -36,7 +37,8 @@
             :serial t
             :components ((:file "package")
                          (:file "test-environment")
-                         (:file "readtime-wrapper")))))
+                         (:file "readtime-wrapper")
+                         (:file "quasi-quote")))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
   (operate 'load-op :cl-syntax-sugar-test)

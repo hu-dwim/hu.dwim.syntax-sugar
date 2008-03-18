@@ -23,10 +23,15 @@
          ,@body
          (values))
        (defun ,readtime-wrapper-name ,args
-         (lambda (handler)
+         (named-lambda ,readtime-wrapper-name (handler)
            (,enabler-function-name ,@(lambda-list-to-funcall-list args))
-           `(progn
-              ,@(funcall handler))))
+           (bind ((result (funcall handler)))
+             (if (consp result)
+                 (if (rest result)
+                     `(progn
+                        ,@result)
+                     (first result))
+                 result))))
        (export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name)))))
 
 (defun Σ (list)

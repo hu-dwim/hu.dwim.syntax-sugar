@@ -37,6 +37,11 @@ For example, this:
 
 Will always read COMMON-LISP:T, no matter what the current package actually is."
   (lambda (reader)
-    (bind ((*package* (find-package package-name)))
-      `(progn
-         ,@(funcall reader)))))
+    (bind ((*package* (find-package package-name))
+           (result (funcall reader)))
+      (if (consp result)
+          (if (rest result)
+              `(progn
+                 ,@result)
+              (first result))
+          result))))
