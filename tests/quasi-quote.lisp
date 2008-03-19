@@ -14,29 +14,29 @@
                      (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote)
                 `(1 2 ,3 ,@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\$
-                                                               :unquote-character #\\;)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\$
+                                                                 :unquote-character #\\;)
                 $(1 2 ;3 ;@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\[
-                                                               :quasi-quote-end-character #\\]
-                                                               :unquote-character #\\;
-                                                               :splice-character #\\!)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\[
+                                                                 :quasi-quote-end-character #\\]
+                                                                 :unquote-character #\\;
+                                                                 :splice-character #\\!)
                   [1 2 ;3 ;!4 5]}")))
     ;; this is a bit crazy: quasi-quote is registered on the same {} chars as the wrapping
     ;; readtime-wrapper, but quasi-quote restores the syntax when its scope is left, so
     ;; everything's fine with this test.
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\{
-                                                               :quasi-quote-end-character #\\}
-                                                               :unquote-character #\\;
-                                                               :splice-character #\\!)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\{
+                                                                 :quasi-quote-end-character #\\}
+                                                                 :unquote-character #\\;
+                                                                 :splice-character #\\!)
                   {1 2 ;3 ;!4 5}}")))))
 
 (deftest test/quasi-quote/end-character-reader-restoration ()
@@ -46,10 +46,10 @@
                       42)))
     (set-macro-character #\[ 42-reader)
     (set-macro-character #\] 42-reader))
-  (bind ((input "[{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\[
-                                                                :quasi-quote-end-character #\\]
-                                                                :unquote-character #\\;
-                                                                :splice-character #\\!)
+  (bind ((input "[{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\[
+                                                                  :quasi-quote-end-character #\\]
+                                                                  :unquote-character #\\;
+                                                                  :splice-character #\\!)
                    [1 2 ;3 ;!4 5]]}]")
          ((:values value position)))
     (setf (values value position) (read-from-string input))
@@ -65,7 +65,7 @@
   (is (equal '(my-quote
                (1 (my-unquote `(foo ,(+ 40 2)) nil) 3))
              (read-from-string
-              "{(with-quasi-quote-syntax my-quote my-unquote)
+              "{(with-quasi-quote-syntax 'my-quote 'my-unquote)
                 `(1 ,`(foo ,(+ 40 2)) 3)}")))
   (bind ((expected '(my-quote
                      (1
@@ -78,15 +78,15 @@
                       3))))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\$ :unquote-character #\\;)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\$ :unquote-character #\\;)
                   $(1 $(bar ;;`(foo ,(+ 40 2))) 3)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote)
                   `(1 `(bar ,,`(foo ,(+ 40 2))) 3)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax my-quote my-unquote :quasi-quote-character #\\[
-                                                               :quasi-quote-end-character #\\]
-                                                               :unquote-character #\\;)
+                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\[
+                                                                 :quasi-quote-end-character #\\]
+                                                                 :unquote-character #\\;)
                   [1 [bar ;;`(foo ,(+ 40 2))] 3]}")))))

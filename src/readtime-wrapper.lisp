@@ -24,7 +24,7 @@ Where SPECIFIER is either a symbol naming a function (available at read time) or
     (declare (ignore char))
     (bind ((*readtable* (copy-readtable *readtable*))
            ((specifier &rest arguments) (ensure-list (read stream t nil t))))
-      (funcall (apply specifier arguments)
+      (funcall (apply specifier (mapcar #'eval arguments))
                (lambda ()
                  (read-delimited-list end-character stream t))))))
 

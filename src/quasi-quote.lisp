@@ -31,20 +31,22 @@
                                 splice-character)
   (labels ((unquote-reader (stream char)
              (declare (ignore char))
-             (bind ((spliced (eq (peek-char nil stream t nil t) splice-character)))
+             (bind ((*readtable* (copy-readtable))
+                    (*quasi-quote-level* (1- *quasi-quote-level*))
+                    (spliced (eq (peek-char nil stream t nil t) splice-character)))
                (when spliced
                  (read-char stream t nil t))
-               `(,unquote-wrapper
-                  ,(bind ((*readtable* (copy-readtable))
-                          (*quasi-quote-level* (1- *quasi-quote-level*)))
-                     (assert (<= 0 *quasi-quote-level*))
-                     (when (zerop *quasi-quote-level*)
-                       ;; restore the original readers when we are leaving our nesting. this way it's possible
-                       ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
-                       (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-character)
-                       (apply 'set-macro-character unquote-character original-reader-on-unquote-character))
-                     (read stream t nil t))
-                  ,spliced)))
+               (assert (<= 0 *quasi-quote-level*))
+               (when (zerop *quasi-quote-level*)
+                 ;; restore the original readers when we are leaving our nesting. this way it's possible
+                 ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
+                 #+nil
+                 (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-character)
+                 (apply 'set-macro-character unquote-character original-reader-on-unquote-character))
+               (bind ((body (read stream t nil t)))
+                 (if (functionp unquote-wrapper)
+                     (funcall unquote-wrapper body spliced)
+                     `(,unquote-wrapper ,body ,spliced)))))
            (quasi-quote-reader (stream char)
              (declare (ignore char))
              (bind ((*quasi-quote-level* (if (boundp '*quasi-quote-level*)
@@ -65,6 +67,8 @@
                                          (read-delimited-list quasi-quote-end-character stream t))
                                     (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-end-character)))
                                 (read stream t nil t))))
-                 `(,quasi-quote-wrapper ,body)))))
+                 (if (functionp quasi-quote-wrapper)
+                     (funcall quasi-quote-wrapper body)
+                     `(,quasi-quote-wrapper ,body))))))
     #'quasi-quote-reader))
 
