@@ -10,12 +10,22 @@
   (:use #:common-lisp :cl-syntax-sugar :stefil :alexandria :metabang-bind :iterate)
 
   (:export
-   #:test)
+   #:test
+   #:test/lambda
+   )
 
   (:shadow
    #:deftest))
 
 (in-package :cl-syntax-sugar-test)
+
+(defun setup-readtable ()
+  ;; this is the single reader we enable in the toplevel test package.
+  (enable-readtime-wrapper-syntax))
+
+#+#.(cl:when (cl:find-package "SWANK") '(:and))
+(setup-swank-readtable-alist
+ '(:cl-syntax-sugar-test) 'setup-readtable)
 
 (defmacro define-test-package-with-syntax (name &body body)
   (bind ((setup-readtable-name `(intern "SETUP-READTABLE" ,name)))

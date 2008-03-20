@@ -59,7 +59,8 @@
   :requires (:cl-syntax-sugar-test :cl-walker)
   :components
   ((:module "tests"
-            :components ((:file "lambda")))))
+            :components ((:file "lambda")
+                         (:file "sharp-l" :depends-on ("lambda"))))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
   (operate 'load-op :cl-syntax-sugar-test)
