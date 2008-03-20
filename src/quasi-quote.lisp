@@ -12,15 +12,17 @@
                                                 (quasi-quote-character #\`)
                                                 (quasi-quote-end-character nil)
                                                 (unquote-character #\,)
-                                                (splice-character #\@))
+                                                (splice-character #\@)
+                                                (quasi-quote-reader-wrapper #'identity))
   (bind ((original-reader-on-quasi-quote-character (multiple-value-list (get-macro-character quasi-quote-character *readtable*)))
          (original-reader-on-unquote-character     (multiple-value-list (get-macro-character unquote-character *readtable*))))
     (set-macro-character quasi-quote-character
-                         (make-quasi-quote-reader original-reader-on-quasi-quote-character
-                                                  original-reader-on-unquote-character
-                                                  quasi-quote-character quasi-quote-end-character quasi-quote-wrapper
-                                                  unquote-character unquote-wrapper
-                                                  splice-character)
+                         (funcall quasi-quote-reader-wrapper
+                                  (make-quasi-quote-reader original-reader-on-quasi-quote-character
+                                                           original-reader-on-unquote-character
+                                                           quasi-quote-character quasi-quote-end-character quasi-quote-wrapper
+                                                           unquote-character unquote-wrapper
+                                                           splice-character))
                          t
                          *readtable*)))
 

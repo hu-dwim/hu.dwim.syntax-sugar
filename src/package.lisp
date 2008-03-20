@@ -12,6 +12,7 @@
   (:export
    #:cl-source-file-with-readtable
    #:system-with-readtable
+   #:define-syntax
 
    #:Λ
    #:λ
