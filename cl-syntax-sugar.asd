@@ -4,10 +4,19 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-user)
+(cl:in-package :cl-user)
+
+;;; try to load asdf-system-connections
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (asdf:find-system :asdf-system-connections nil)
+    (when (find-package :asdf-install)
+      (eval (read-from-string "(asdf-install:install '#:asdf-system-connections)")))
+    (unless (asdf:find-system :asdf-system-connections nil)
+      (error "The cl-syntax-sugar system requires asdf-system-connections. See http://www.cliki.net/asdf-system-connections for details and download instructions.")))
+  (asdf:operate 'asdf:load-op :asdf-system-connections))
 
 (defpackage #:cl-syntax-sugar-system
-  (:use :cl :asdf))
+  (:use :cl :asdf :asdf-system-connections))
 
 (in-package #:cl-syntax-sugar-system)
 
@@ -28,6 +37,13 @@
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
 
+(defsystem-connection cl-syntax-sugar-and-cl-walker
+  :requires (:cl-syntax-sugar :cl-walker)
+  :components
+  ((:module "src"
+            :components ((:file "cl-walker-integration")
+                         (:file "lambda" :depends-on ("cl-walker-integration"))))))
+
 (defsystem :cl-syntax-sugar-test
   :description "Tests for the cl-syntax-sugar system."
   :depends-on (:cl-syntax-sugar :stefil)
@@ -38,6 +54,12 @@
                          (:file "test-environment")
                          (:file "readtime-wrapper")
                          (:file "quasi-quote")))))
+
+(defsystem-connection cl-syntax-sugar-test-and-cl-walker
+  :requires (:cl-syntax-sugar-test :cl-walker)
+  :components
+  ((:module "tests"
+            :components ((:file "lambda")))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
   (operate 'load-op :cl-syntax-sugar-test)

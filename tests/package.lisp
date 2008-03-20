@@ -9,5 +9,26 @@
 (defpackage :cl-syntax-sugar-test
   (:use #:common-lisp :cl-syntax-sugar :stefil :alexandria :metabang-bind :iterate)
 
+  (:export
+   #:test)
+
   (:shadow
    #:deftest))
+
+(in-package :cl-syntax-sugar-test)
+
+(defmacro define-test-package-with-syntax (name &body body)
+  (bind ((setup-readtable-name `(intern "SETUP-READTABLE" ,name)))
+    `(progn
+       (defpackage ,name
+         (:use #:common-lisp :cl-syntax-sugar :cl-syntax-sugar-test :stefil :alexandria :metabang-bind :iterate))
+       (setf (fdefinition ,setup-readtable-name)
+             (lambda ()
+               ,@body))
+       #+#.(cl:when (cl:find-package "SWANK") '(:and))
+       (setup-swank-readtable-alist
+        ',name ,setup-readtable-name))))
+
+(define-test-package-with-syntax :cl-syntax-sugar-test.sharp-l
+  (enable-readtime-wrapper-syntax)
+  (enable-sharp-l-syntax))
