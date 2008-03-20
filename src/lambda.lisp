@@ -6,6 +6,11 @@
 
 (in-package :cl-syntax-sugar)
 
+(defmacro λ (args &body body)
+  "Macro on the λ unicode character expanding to CL:LAMBDA."
+  `(lambda ,args
+     ,@body))
+
 (define-syntax lambda-with-bang-args (&key dispatch-character sub-dispatch-character
                                            start-character end-character)
   "Reader macro for simple lambdas.
