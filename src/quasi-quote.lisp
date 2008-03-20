@@ -29,6 +29,7 @@
                                 quasi-quote-character quasi-quote-end-character quasi-quote-wrapper
                                 unquote-character unquote-wrapper
                                 splice-character)
+  (declare (ignorable original-reader-on-quasi-quote-character))
   (labels ((unquote-reader (stream char)
              (declare (ignore char))
              (bind ((*readtable* (copy-readtable))
@@ -40,8 +41,8 @@
                (when (zerop *quasi-quote-level*)
                  ;; restore the original readers when we are leaving our nesting. this way it's possible
                  ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
-                 #+nil
-                 (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-character)
+                 ;; (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-character)
+                 ;; this would restore the original start character which would prevent the nested usage
                  (apply 'set-macro-character unquote-character original-reader-on-unquote-character))
                (bind ((body (read stream t nil t)))
                  (if (functionp unquote-wrapper)
