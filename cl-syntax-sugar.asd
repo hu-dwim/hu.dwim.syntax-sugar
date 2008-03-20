@@ -26,7 +26,7 @@
            "Attila Lendvai <attila.lendvai@gmail.com>")
   :licence "BSD / Public Domain"
   :description "Syntax sugar"
-  :depends-on (:alexandria :metabang-bind :iterate)
+  :depends-on (:alexandria :metabang-bind)
   :components
   ((:module "src"
             :components ((:file "package")

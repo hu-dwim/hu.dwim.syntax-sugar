@@ -7,7 +7,7 @@
 (cl:in-package :cl-user)
 
 (defpackage :cl-syntax-sugar
-  (:use #:common-lisp :alexandria :metabang-bind :iterate)
+  (:use #:common-lisp :alexandria :metabang-bind)
 
   (:export
    #:cl-source-file-with-readtable
