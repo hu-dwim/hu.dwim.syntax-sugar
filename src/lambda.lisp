@@ -122,7 +122,7 @@ that adds its two arguments."
                        :append (collect-var-references (slot-value input-form slot-name))))
                  (t nil))))
       (or (loop
-             :for var :in (collect-var-references (walk-form form nil (make-walk-env env)))
+             :for var :in (collect-var-references (walk-form form nil (make-walk-environment env)))
              :when (bang-var-p var)
                :maximize (bang-var-p var))
           0))))
