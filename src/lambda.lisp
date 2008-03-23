@@ -31,20 +31,20 @@ Examples:
 
 All arguments are declared ignorable. So if there is a reference
 to an argument !X but not !(x-1) we still take X arguments, but x
-- 1 is ignored. Examples:
+- 1 is ignored. Examples (sans the ignorable declarations):
 
-#L(foo !2) ==> (lambda (!1 !2) (declare (ignore !1)) (foo !2))
+#L(foo !2) ==> (lambda (!1 !2) (foo !2))
 
 We can specify exactly how many arguments to take by using the
 read macro's prefix parameter. NB: this is only neccessary if the
 lambda needs to accept N arguments but only uses N - 1. Example:
 
-#2L(foo !1) ==> (lambda (!1 !2) (declare (ignore !2)) (foo !1))
+#2L(foo !1) ==> (lambda (!1 !2) (foo !1))
 
-When #l forms are nested, !X variables are bound to the innermost 
+When #L forms are nested, !X variables are bound to the innermost
 form. Example:
 
-#l#l(+ !1 !2)
+#L#L(+ !1 !2) ==> (lambda () (lambda (!1 !2) (+ !1 !2)))
 
 returns a function that takes no arguments and returns a function
 that adds its two arguments."

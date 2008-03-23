@@ -60,7 +60,8 @@
                (bind ((body (if quasi-quote-end-character
                                 ;; we must set the syntax on the end char to be like #\)
                                 ;; until we read out our entire body. this is needed to
-                                ;; make "[... 5] style inputs work.
+                                ;; make "[... 5] style inputs work where '5' is not
+                                ;; separated from ']'.
                                 (bind ((original-reader-on-quasi-quote-end-character
                                         (multiple-value-list
                                          (get-macro-character quasi-quote-end-character *readtable*))))
