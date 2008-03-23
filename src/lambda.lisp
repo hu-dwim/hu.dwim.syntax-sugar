@@ -78,9 +78,9 @@ that adds its two arguments."
         (bind ((body (read-delimited-list end-character stream t)))
           `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil)))
       (named-lambda lambda-with-bang-args-reader (stream subchar numeric-arg)
-        (declare (ignore subchar numeric-arg))
+        (declare (ignore subchar))
         (bind ((body (read stream t nil t)))
-          `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil)))))
+          `(lambda-with-bang-args-expander ,(package-name *package*) ,body ,numeric-arg)))))
 
 (defmacro lambda-with-bang-args-expander (package-designator body min-args &environment env)
   (bind ((package package-designator))

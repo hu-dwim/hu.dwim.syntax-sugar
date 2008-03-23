@@ -36,6 +36,10 @@
   (#L42 () 42)
   (#L(+ !1 !2) (2 40) 42))
 
+(define-sharp-l-test test/lambda/sharp-l/minimum-args
+  (#2L42 (1 2) 42)
+  (#2L(+ !1 40) (2 99) 42))
+
 (define-sharp-l-test test/lambda/sharp-l/block-label-is-ignored
   (#L(block !2 (return-from !2 !1)) (6) 6))
 
