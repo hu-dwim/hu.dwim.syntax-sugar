@@ -8,12 +8,15 @@
 
 ;;; try to load asdf-system-connections
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (asdf:find-system :asdf-system-connections nil)
-    (when (find-package :asdf-install)
-      (eval (read-from-string "(asdf-install:install '#:asdf-system-connections)")))
-    (unless (asdf:find-system :asdf-system-connections nil)
-      (error "The cl-syntax-sugar system requires asdf-system-connections. See http://www.cliki.net/asdf-system-connections for details and download instructions.")))
-  (asdf:operate 'asdf:load-op :asdf-system-connections))
+  (flet ((try (system)
+           (unless (asdf:find-system system nil)
+             (warn "Trying to install required dependency: ~S" system)
+             (when (find-package :asdf-install)
+               (funcall (read-from-string "asdf-install:install") system))
+             (unless (asdf:find-system system nil)
+               (error "The ~A system requires ~A." (or *compile-file-pathname* *load-pathname*) system)))
+           (asdf:operate 'asdf:load-op system)))
+    (try :asdf-system-connections)))
 
 (defpackage #:cl-syntax-sugar-system
   (:use :cl :asdf :asdf-system-connections))
@@ -31,7 +34,7 @@
   ((:module "src"
             :components ((:file "package")
                          (:file "duplicates" :depends-on ("package"))
-                         (:file "integration" :depends-on ("package" "duplicates"))
+                         (:file "asdf-integration" :depends-on ("package" "duplicates"))
                          (:file "syntax-sugar" :depends-on ("duplicates"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
@@ -43,6 +46,12 @@
   ((:module "src"
             :components ((:file "cl-walker-integration")
                          (:file "lambda" :depends-on ("cl-walker-integration"))))))
+
+(defsystem-connection cl-syntax-sugar-and-swank
+  :requires (:cl-syntax-sugar :swank)
+  :components
+  ((:module "src"
+            :components ((:file "swank-integration")))))
 
 (defsystem :cl-syntax-sugar-test
   :description "Tests for the cl-syntax-sugar system."

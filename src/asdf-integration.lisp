@@ -34,23 +34,6 @@
 
 (in-package :cl-syntax-sugar)
 
-#+#.(cl:when (cl:find-package "SWANK") '(:and))
-(progn
-  (defun register-readtable-for-swank (&rest package-name/readtable-setup-function-pairs)
-    (loop :for (package-names setup-function)
-               :on package-name/readtable-setup-function-pairs
-               :by #'cddr :do
-          (bind ((*readtable* (copy-readtable)))
-            (funcall setup-function)
-            (dolist (package-name (ensure-list package-names))
-              (setf package-name (string package-name))
-              (let ((entry (find package-name swank:*readtable-alist* :test #'string= :key #'car)))
-                (unless entry
-                  (setf entry (cons package-name nil))
-                  (push entry swank:*readtable-alist*))
-                (setf (cdr entry) *readtable*))))))
-  (export 'register-readtable-for-swank))
-
 (defclass readtable-function-mixin ()
   ((setup-readtable-function
     :initform nil
