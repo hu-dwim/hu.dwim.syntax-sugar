@@ -24,7 +24,7 @@
   (enable-readtime-wrapper-syntax))
 
 #+#.(cl:when (cl:find-package "SWANK") '(:and))
-(setup-swank-readtable-alist
+(register-readtable-for-swank
  '(:cl-syntax-sugar-test) 'setup-readtable)
 
 (defmacro define-test-package-with-syntax (name &body body)
@@ -36,7 +36,7 @@
              (lambda ()
                ,@body))
        #+#.(cl:when (cl:find-package "SWANK") '(:and))
-       (setup-swank-readtable-alist
+       (register-readtable-for-swank
         ',name ,setup-readtable-name))))
 
 (define-test-package-with-syntax :cl-syntax-sugar-test.sharp-l

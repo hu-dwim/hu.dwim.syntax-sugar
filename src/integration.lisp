@@ -27,7 +27,7 @@
   (enable-readtime-wrapper-syntax))
 
 #+#.(cl:when (cl:find-package "SWANK") '(:and))
-(setup-swank-readtable-alist
+(register-readtable-for-swank
  '(:my-package :my-package-test) 'setup-readtable)
 
 |#
@@ -36,7 +36,7 @@
 
 #+#.(cl:when (cl:find-package "SWANK") '(:and))
 (progn
-  (defun setup-swank-readtable-alist (&rest package-name/readtable-setup-function-pairs)
+  (defun register-readtable-for-swank (&rest package-name/readtable-setup-function-pairs)
     (loop :for (package-names setup-function)
                :on package-name/readtable-setup-function-pairs
                :by #'cddr :do
@@ -49,7 +49,7 @@
                   (setf entry (cons package-name nil))
                   (push entry swank:*readtable-alist*))
                 (setf (cdr entry) *readtable*))))))
-  (export 'setup-swank-readtable-alist))
+  (export 'register-readtable-for-swank))
 
 (defclass readtable-function-mixin ()
   ((setup-readtable-function
