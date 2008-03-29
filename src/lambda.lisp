@@ -7,9 +7,19 @@
 (in-package :cl-syntax-sugar)
 
 (defmacro λ (args &body body)
-  "Macro on the λ unicode character expanding to CL:LAMBDA."
-  `(lambda ,args
-     ,@body))
+  "Macro on the λ unicode character expanding to CL:LAMBDA and ignoring arguments named by a single '_' character."
+  (bind ((ignored-symbols (list))
+         (modified-args (mapcar (lambda (el)
+                                  (if (string-equal '_ el)
+                                      (let ((el (gensym)))
+                                        (push el ignored-symbols)
+                                        el)
+                                      el))
+                                args)))
+    `(lambda ,modified-args
+       ,@(when ignored-symbols
+           `((declare (ignore ,@ignored-symbols))))
+       ,@body)))
 
 (define-syntax lambda-with-bang-args (&key dispatch-character sub-dispatch-character
                                            start-character end-character)

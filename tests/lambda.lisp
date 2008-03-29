@@ -16,3 +16,9 @@
                          [+ !1 40]}
                       2)
              42)))
+
+(deftest test/lambda/argument-ignoring ()
+  (is (equal (funcall (λ (a _ b)
+                        (* a b))
+                      21 0 2)
+             42)))
