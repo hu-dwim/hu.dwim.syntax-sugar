@@ -31,7 +31,8 @@
                                 quasi-quote-character quasi-quote-end-character quasi-quote-wrapper
                                 unquote-character unquote-wrapper
                                 splice-character)
-  (declare (ignorable original-reader-on-quasi-quote-character))
+  (declare (ignorable original-reader-on-quasi-quote-character
+                      quasi-quote-character))
   (labels ((unquote-reader (stream char)
              (declare (ignore char))
              (bind ((*readtable* (copy-readtable))
@@ -62,14 +63,9 @@
                                 ;; until we read out our entire body. this is needed to
                                 ;; make "[... 5] style inputs work where '5' is not
                                 ;; separated from ']'.
-                                (bind ((original-reader-on-quasi-quote-end-character
-                                        (multiple-value-list
-                                         (get-macro-character quasi-quote-end-character *readtable*))))
-                                  (unwind-protect
-                                       (progn
-                                         (set-syntax-from-char quasi-quote-end-character #\) *readtable*)
-                                         (read-delimited-list quasi-quote-end-character stream t))
-                                    (apply 'set-macro-character quasi-quote-character original-reader-on-quasi-quote-end-character)))
+                                (bind ((*readtable* (copy-readtable)))
+                                  (set-syntax-from-char quasi-quote-end-character #\) *readtable*)
+                                  (read-delimited-list quasi-quote-end-character stream t))
                                 (read stream t nil t))))
                  (if (functionp quasi-quote-wrapper)
                      (funcall quasi-quote-wrapper body)
