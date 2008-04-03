@@ -112,27 +112,24 @@ that adds its two arguments."
 
 (defun find-highest-bang-var (form env)
   (bind ((*warn-undefined* nil))
-    (labels ((bang-var-p (form)
-               (and (starts-with #\! (symbol-name form) :test #'char=)
-                    (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
-             ;; TODO add a util for this kind of collecting in the walker
-             (collect-var-references (input-form)
-               (typecase input-form
-                 (cons
-                  (append (collect-var-references (car input-form))
-                          (collect-var-references (cdr input-form))))
-
-                 (free-variable-reference (list (slot-value input-form 'name)))
-                 (local-lexical-variable-reference (list (slot-value input-form 'name)))
-                 (form
-                  (loop
-                     :for slot-name :in (mapcar #'sb-mop:slot-definition-name
-                                                (sb-mop:class-slots (class-of input-form)))
-                     :when (not (member slot-name '(parent target-progn enclosing-tagbody target-block)))
-                       :append (collect-var-references (slot-value input-form slot-name))))
-                 (t nil))))
+    (flet ((bang-var-p (form)
+             (and (starts-with #\! (symbol-name form) :test #'char=)
+                  (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
+           (collect-variable-references (top-form)
+             (let ((result (list)))
+               (walk-ast top-form
+                         (lambda (form)
+                           (when (typep form '(or free-variable-reference-form
+                                               lexical-variable-reference-form))
+                             (push form result))
+                           (if (typep form 'lambda-function-form)
+                               nil
+                               t)))
+               result)))
       (or (loop
-             :for var :in (collect-var-references (walk-form form nil (make-walk-environment env)))
+             :for var-form :in (collect-variable-references
+                                (walk-form form nil (make-walkenv env)))
+             :for var = (name-of var-form)
              :when (bang-var-p var)
                :maximize (bang-var-p var))
           0))))
