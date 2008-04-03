@@ -7,7 +7,7 @@
 (cl:in-package :common-lisp-user)
 
 (defpackage :cl-syntax-sugar-test
-  (:use #:common-lisp :cl-syntax-sugar :stefil :alexandria :metabang-bind :iterate)
+  (:use #:common-lisp :cl-syntax-sugar :cl-walker :stefil :alexandria :metabang-bind :iterate)
 
   (:export
    #:test
@@ -31,7 +31,7 @@
   (bind ((setup-readtable-name `(intern "SETUP-READTABLE" ,name)))
     `(progn
        (defpackage ,name
-         (:use #:common-lisp :cl-syntax-sugar :cl-syntax-sugar-test :stefil :alexandria :metabang-bind :iterate))
+         (:use #:common-lisp :cl-syntax-sugar :cl-walker :cl-syntax-sugar-test :stefil :alexandria :metabang-bind :iterate))
        (setf (fdefinition ,setup-readtable-name)
              (lambda ()
                ,@body))
