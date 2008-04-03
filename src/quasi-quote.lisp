@@ -6,6 +6,8 @@
 
 (in-package :cl-syntax-sugar)
 
+;; TODO think through what happens with *quasi-quote-level* when several quasi-quote readers are installed
+;; TODO cl-quasi-quote also has a *quasi-quote-level*, cleanup!
 (defvar *quasi-quote-level*)
 
 (define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper &key
