@@ -6,7 +6,7 @@
 
 (in-package :cl-syntax-sugar)
 
-(define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper nesting-level-variable
+(define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper quasi-quote-nesting-level-variable
                                                 &key
                                                 (nested-quasi-quote-wrapper quasi-quote-wrapper)
                                                 (quasi-quote-character #\`)
@@ -14,38 +14,39 @@
                                                 (unquote-character #\,)
                                                 (splice-character #\@)
                                                 (toplevel-reader-wrapper #'identity))
-  (assert nesting-level-variable)
+  (assert quasi-quote-nesting-level-variable)
   (bind ((original-reader-on-quasi-quote-end-character (when quasi-quote-end-character
                                                          (multiple-value-list (get-macro-character quasi-quote-end-character *readtable*))))
          (original-reader-on-unquote-character         (multiple-value-list (get-macro-character unquote-character *readtable*))))
     (set-macro-character quasi-quote-character
-                         (funcall toplevel-reader-wrapper
-                                  (make-quasi-quote-reader nesting-level-variable
-                                                           original-reader-on-quasi-quote-end-character
-                                                           original-reader-on-unquote-character
-                                                           quasi-quote-character quasi-quote-end-character
-                                                           quasi-quote-wrapper nested-quasi-quote-wrapper
-                                                           unquote-character unquote-wrapper
-                                                           splice-character))
+                         (make-quasi-quote-reader quasi-quote-nesting-level-variable
+                                                  original-reader-on-quasi-quote-end-character
+                                                  original-reader-on-unquote-character
+                                                  quasi-quote-character quasi-quote-end-character
+                                                  quasi-quote-wrapper nested-quasi-quote-wrapper
+                                                  unquote-character unquote-wrapper
+                                                  splice-character
+                                                  toplevel-reader-wrapper)
                          t
                          *readtable*)))
 
-(defun make-quasi-quote-reader (nesting-level-variable
+(defun make-quasi-quote-reader (quasi-quote-nesting-level-variable
                                 original-reader-on-quasi-quote-end-character
                                 original-reader-on-unquote-character
                                 quasi-quote-character quasi-quote-end-character
                                 quasi-quote-wrapper nested-quasi-quote-wrapper
                                 unquote-character unquote-wrapper
-                                splice-character)
+                                splice-character
+                                toplevel-reader-wrapper)
   (labels ((unquote-reader (stream char)
              (declare (ignore char))
              (progv
-                 (list nesting-level-variable)
-                 (list (1- (symbol-value nesting-level-variable)))
+                 (list quasi-quote-nesting-level-variable)
+                 (list (1- (symbol-value quasi-quote-nesting-level-variable)))
                (bind ((*readtable* (copy-readtable))
-                      (nesting-level (symbol-value nesting-level-variable))
-                      (spliced (eq (peek-char nil stream t nil t) splice-character)))
-                 (when spliced
+                      (nesting-level (symbol-value quasi-quote-nesting-level-variable))
+                      (spliced? (eq (peek-char nil stream t nil t) splice-character)))
+                 (when spliced?
                    (read-char stream t nil t))
                  (assert (>= nesting-level 0))
                  (when (zerop nesting-level)
@@ -54,17 +55,17 @@
                    (apply 'set-macro-character unquote-character original-reader-on-unquote-character)
                    (when quasi-quote-end-character
                      (apply 'set-macro-character quasi-quote-end-character original-reader-on-quasi-quote-end-character))
-                   (set-macro-character quasi-quote-character #'toplevel-quasi-quote-reader))
+                   (set-macro-character quasi-quote-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader)))
                  (bind ((body (read stream t nil t)))
                    (if (functionp unquote-wrapper)
-                       (funcall unquote-wrapper body spliced)
-                       (list unquote-wrapper body spliced))))))
+                       (funcall unquote-wrapper body spliced?)
+                       (list unquote-wrapper body spliced?))))))
            (toplevel-quasi-quote-reader (stream char)
              (declare (ignore char))
              (progv
-                 (list nesting-level-variable)
-                 (list (if (boundp nesting-level-variable)
-                           (1+ (symbol-value nesting-level-variable))
+                 (list quasi-quote-nesting-level-variable)
+                 (list (if (boundp quasi-quote-nesting-level-variable)
+                           (1+ (symbol-value quasi-quote-nesting-level-variable))
                            1))
                  (bind ((*readtable* (copy-readtable)))
                    (set-macro-character unquote-character #'unquote-reader)
@@ -83,14 +84,14 @@
                          (list quasi-quote-wrapper body))))))
            (nested-quasi-quote-reader (stream char)
              (declare (ignore char))
-             (assert (>= (symbol-value nesting-level-variable) 1))
+             (assert (>= (symbol-value quasi-quote-nesting-level-variable) 1))
              (progv
-                 (list nesting-level-variable)
-                 (list (1+ (symbol-value nesting-level-variable)))
+                 (list quasi-quote-nesting-level-variable)
+                 (list (1+ (symbol-value quasi-quote-nesting-level-variable)))
                (bind ((body (if quasi-quote-end-character
                                 (read-delimited-list quasi-quote-end-character stream t)
                                 (read stream t nil t))))
                  (if (functionp nested-quasi-quote-wrapper)
                      (funcall nested-quasi-quote-wrapper body)
                      (list nested-quasi-quote-wrapper body))))))
-    #'toplevel-quasi-quote-reader))
+    (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader)))
