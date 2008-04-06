@@ -55,20 +55,15 @@
 
 (defsystem :cl-syntax-sugar-test
   :description "Tests for the cl-syntax-sugar system."
-  :depends-on (:cl-syntax-sugar :stefil)
+  :depends-on (:cl-syntax-sugar :cl-walker :stefil)
   :components
   ((:module "tests"
             :serial t
             :components ((:file "package")
                          (:file "test-environment")
                          (:file "readtime-wrapper")
-                         (:file "quasi-quote")))))
-
-(defsystem-connection cl-syntax-sugar-test-and-cl-walker
-  :requires (:cl-syntax-sugar-test :cl-walker)
-  :components
-  ((:module "tests"
-            :components ((:file "lambda")
+                         (:file "quasi-quote")
+                         (:file "lambda")
                          (:file "sharp-l" :depends-on ("lambda"))))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
