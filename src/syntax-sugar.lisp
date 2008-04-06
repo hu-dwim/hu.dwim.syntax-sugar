@@ -42,7 +42,11 @@
 (defun Π (list)
   (reduce #'* list))
 
-(defmacro λ (args &body forms)
-  `(lambda ,args
-     ,@forms))
+(defmacro √ (number)
+  `(sqrt ,number))
 
+(defmacro ∛ (number)
+  `(expt ,number 1/3))
+
+(defmacro ∜ (number)
+  `(expt ,number 1/4))

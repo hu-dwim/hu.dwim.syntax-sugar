@@ -14,7 +14,10 @@
    #:system-with-readtable
    #:define-syntax
 
-   #:Λ
+   #:√
+   #:∛
+   #:∜
+
    #:λ
    #:α
    #:β
