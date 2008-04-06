@@ -8,36 +8,62 @@
 
 (defsuite* (test/quasi-quote :in test))
 
+(defvar *my-quasi-quote-nesting-level*)
+
+(define-syntax my-quasi-quote (&key (nested-quasi-quote-wrapper 'my-quote)
+                                    (quasi-quote-character #\`)
+                                    (quasi-quote-end-character nil)
+                                    (unquote-character #\,)
+                                    (splice-character #\@))
+  ;; define a custom quasi-quote syntax. this way we need to write less
+  ;; code to set up the readtime-wrapper syntax in the tests.
+  (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote '*my-quasi-quote-nesting-level*
+                                       :nested-quasi-quote-wrapper nested-quasi-quote-wrapper
+                                       :quasi-quote-character quasi-quote-character
+                                       :quasi-quote-end-character quasi-quote-end-character
+                                       :unquote-character unquote-character
+                                       :splice-character splice-character))
+
 (deftest test/quasi-quote/simple ()
   (enable-readtime-wrapper-syntax)
   (bind ((expected '(my-quote
                      (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax 'my-quote 'my-unquote)
-                `(1 2 ,3 ,@4 5)}")))
+                "{with-my-quasi-quote-syntax
+                  `(1 2 ,3 ,@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\$
-                                                                 :unquote-character #\\;)
-                $(1 2 ;3 ;@4 5)}")))
+                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\$ :unquote-character #\\;)
+                  $(1 2 ;3 ;@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\[
-                                                                 :quasi-quote-end-character #\\]
-                                                                 :unquote-character #\\;
-                                                                 :splice-character #\\!)
+                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\[
+                                              :quasi-quote-end-character #\\]
+                                              :unquote-character #\\;
+                                              :splice-character #\\!)
                   [1 2 ;3 ;!4 5]}")))
     ;; this is a bit crazy: quasi-quote is registered on the same {} chars as the wrapping
     ;; readtime-wrapper, but quasi-quote restores the syntax when its scope is left, so
     ;; everything's fine with this test.
     (is (equal expected
                (read-from-string
-                "{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\{
-                                                                 :quasi-quote-end-character #\\}
-                                                                 :unquote-character #\\;
-                                                                 :splice-character #\\!)
+                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\{
+                                              :quasi-quote-end-character #\\}
+                                              :unquote-character #\\;
+                                              :splice-character #\\!)
                   {1 2 ;3 ;!4 5}}")))))
+
+(deftest test/quasi-quote/nested ()
+  (enable-readtime-wrapper-syntax)
+  (is (equal '(my-quote (1 2 (my-unquote (list 3 (my-quote (4 (my-unquote 5 t)))) nil)))
+             (read-from-string
+              "{with-my-quasi-quote-syntax
+                `(1 2 ,(list 3 `(4 ,@5)))}")))
+  (is (equal '(my-quote (1 2 (my-nested-quote (3 (my-unquote 4 t) (my-unquote (my-unquote 5 nil) nil)))))
+             (read-from-string
+              "{(with-my-quasi-quote-syntax :nested-quasi-quote-wrapper 'my-nested-quote)
+                `(1 2 `(3 ,@4 ,,5))}"))))
 
 (deftest test/quasi-quote/end-character-reader-restoration ()
   (enable-readtime-wrapper-syntax)
@@ -46,10 +72,10 @@
                       42)))
     (set-macro-character #\[ 42-reader)
     (set-macro-character #\] 42-reader))
-  (bind ((input "[{(with-quasi-quote-syntax 'my-quote 'my-unquote :quasi-quote-character #\\[
-                                                                  :quasi-quote-end-character #\\]
-                                                                  :unquote-character #\\;
-                                                                  :splice-character #\\!)
+  (bind ((input "[{(with-my-quasi-quote-syntax :quasi-quote-character #\\[
+                                               :quasi-quote-end-character #\\]
+                                               :unquote-character #\\;
+                                               :splice-character #\\!)
                    [1 2 ;3 ;!4 5]]}]")
          ((:values value position)))
     (setf (values value position) (read-from-string input))
