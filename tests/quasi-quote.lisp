@@ -11,16 +11,18 @@
 (defvar *my-quasi-quote-nesting-level*)
 
 (define-syntax my-quasi-quote (&key (nested-quasi-quote-wrapper 'my-quote)
-                                    (quasi-quote-character #\`)
-                                    (quasi-quote-end-character nil)
+                                    (start-character #\`)
+                                    end-character
+                                    dispatch-character
                                     (unquote-character #\,)
                                     (splice-character #\@))
   ;; define a custom quasi-quote syntax. this way we need to write less
   ;; code to set up the readtime-wrapper syntax in the tests.
   (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote '*my-quasi-quote-nesting-level*
                                        :nested-quasi-quote-wrapper nested-quasi-quote-wrapper
-                                       :quasi-quote-character quasi-quote-character
-                                       :quasi-quote-end-character quasi-quote-end-character
+                                       :start-character start-character
+                                       :dispatch-character dispatch-character
+                                       :end-character end-character
                                        :unquote-character unquote-character
                                        :splice-character splice-character))
 
