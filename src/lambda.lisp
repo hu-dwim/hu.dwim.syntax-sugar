@@ -54,11 +54,9 @@ that adds its two arguments."
           (make-dispatch-macro-character dispatch-character))
         (set-dispatch-macro-character dispatch-character sub-dispatch-character
                                       (make-lambda-with-bang-args-reader nil)))
-      (progn
-        (set-macro-character start-character
-                             (make-lambda-with-bang-args-reader end-character)
-                             t *readtable*)
-        (set-syntax-from-char end-character #\) *readtable*))))
+      (set-macro-character start-character
+                           (make-lambda-with-bang-args-reader end-character)
+                           t *readtable*)))
 
 (define-syntax sharp-l ()
   "Enables the LAMBDA-WITH-BANG-ARGS syntax on #L(+ !1 !2)"
@@ -70,8 +68,10 @@ that adds its two arguments."
   (if end-character
       (named-lambda lambda-with-bang-args-reader (stream char)
         (declare (ignore char))
-        (bind ((body (read-delimited-list end-character stream t)))
-          `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil)))
+        (bind ((*readtable* (copy-readtable *readtable*)))
+          (set-syntax-from-char end-character #\) *readtable*)
+          (bind ((body (read-delimited-list end-character stream t)))
+            `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil))))
       (named-lambda lambda-with-bang-args-reader (stream subchar numeric-arg)
         (declare (ignore subchar))
         (bind ((body (read stream t nil t)))
