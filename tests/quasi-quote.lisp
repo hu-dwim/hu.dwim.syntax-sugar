@@ -36,12 +36,18 @@
                   `(1 2 ,3 ,@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\$ :unquote-character #\\;)
+                "{(with-my-quasi-quote-syntax :start-character #\\$ :unquote-character #\\;)
                   $(1 2 ;3 ;@4 5)}")))
     (is (equal expected
                (read-from-string
-                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\[
-                                              :quasi-quote-end-character #\\]
+                "{(with-my-quasi-quote-syntax :start-character #\\`
+                                              :unquote-character #\\;
+                                              :dispatch-character #\\#)
+                  #`(1 2 ;3 ;@4 5)}")))
+    (is (equal expected
+               (read-from-string
+                "{(with-my-quasi-quote-syntax :start-character #\\[
+                                              :end-character #\\]
                                               :unquote-character #\\;
                                               :splice-character #\\!)
                   [1 2 ;3 ;!4 5]}")))
@@ -50,8 +56,8 @@
     ;; everything's fine with this test.
     (is (equal expected
                (read-from-string
-                "{(with-my-quasi-quote-syntax :quasi-quote-character #\\{
-                                              :quasi-quote-end-character #\\}
+                "{(with-my-quasi-quote-syntax :start-character #\\{
+                                              :end-character #\\}
                                               :unquote-character #\\;
                                               :splice-character #\\!)
                   {1 2 ;3 ;!4 5}}")))))
@@ -74,8 +80,8 @@
                       42)))
     (set-macro-character #\[ 42-reader)
     (set-macro-character #\] 42-reader))
-  (bind ((input "[{(with-my-quasi-quote-syntax :quasi-quote-character #\\[
-                                               :quasi-quote-end-character #\\]
+  (bind ((input "[{(with-my-quasi-quote-syntax :start-character #\\[
+                                               :end-character #\\]
                                                :unquote-character #\\;
                                                :splice-character #\\!)
                    [1 2 ;3 ;!4 5]]}]")
