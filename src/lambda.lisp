@@ -113,7 +113,7 @@ that adds its two arguments."
                result)))
       (or (loop
              :for var-form :in (collect-variable-references
-                                (walk-form form nil (make-walkenv env)))
+                                (walk-form form nil (make-walk-environment env)))
              :for var = (name-of var-form)
              :when (bang-var-p var)
                :maximize (bang-var-p var))
