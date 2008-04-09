@@ -14,7 +14,8 @@
                                                 end-character
                                                 (unquote-character #\,)
                                                 (splice-character #\@)
-                                                (toplevel-reader-wrapper #'identity))
+                                                (toplevel-reader-wrapper #'identity)
+                                                readtable-case)
   (assert quasi-quote-nesting-level-variable)
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))
@@ -28,7 +29,8 @@
                                           quasi-quote-wrapper nested-quasi-quote-wrapper
                                           unquote-character unquote-wrapper
                                           splice-character
-                                          toplevel-reader-wrapper)))
+                                          toplevel-reader-wrapper
+                                          readtable-case)))
     (if dispatch-character
         (progn
           (unless (get-macro-character dispatch-character)
@@ -43,13 +45,14 @@
                                 quasi-quote-wrapper nested-quasi-quote-wrapper
                                 unquote-character unquote-wrapper
                                 splice-character
-                                toplevel-reader-wrapper)
+                                toplevel-reader-wrapper
+                                readtable-case)
   (labels ((unquote-reader (stream char)
              (declare (ignore char))
              (progv
                  (list quasi-quote-nesting-level-variable)
                  (list (1- (symbol-value quasi-quote-nesting-level-variable)))
-               (bind ((*readtable* (copy-readtable))
+               (bind ((*readtable* (copy-readtable)) ; this is only needed when (zerop nesting-level) but then it's needed inside the recursive read call down below
                       (nesting-level (symbol-value quasi-quote-nesting-level-variable))
                       (spliced? (eq (peek-char nil stream t nil t) splice-character)))
                  (when spliced?
@@ -58,6 +61,7 @@
                  (when (zerop nesting-level)
                    ;; restore the original readers when we are leaving our nesting. this way it's possible
                    ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
+                   (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
                    (apply 'set-macro-character unquote-character original-reader-on-unquote-character)
                    (when end-character
                      (apply 'set-macro-character end-character original-reader-on-end-character))
@@ -73,21 +77,24 @@
                  (list (if (boundp quasi-quote-nesting-level-variable)
                            (1+ (symbol-value quasi-quote-nesting-level-variable))
                            1))
-                 (bind ((*readtable* (copy-readtable)))
-                   (set-macro-character unquote-character #'unquote-reader)
-                   (set-macro-character start-character #'nested-quasi-quote-reader)
-                   (bind ((body (if end-character
-                                    ;; we must set the syntax on the end char to be like #\)
-                                    ;; until we read out our entire body. this is needed to
-                                    ;; make "[... 5] style inputs work where '5' is not
-                                    ;; separated from ']'.
-                                    (bind ((*readtable* (copy-readtable)))
-                                      (set-syntax-from-char end-character #\) *readtable*)
-                                      (read-delimited-list end-character stream t))
-                                    (read stream t nil t))))
-                     (if (functionp quasi-quote-wrapper)
-                         (funcall quasi-quote-wrapper body)
-                         (list quasi-quote-wrapper body))))))
+               (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
+                      (*readtable* (copy-readtable)))
+                 (set-macro-character unquote-character #'unquote-reader)
+                 (set-macro-character start-character #'nested-quasi-quote-reader)
+                 (when readtable-case
+                   (setf (readtable-case *readtable*) readtable-case))
+                 (bind ((body (if end-character
+                                  ;; we must set the syntax on the end char to be like #\)
+                                  ;; until we read out our entire body. this is needed to
+                                  ;; make "[... 5] style inputs work where '5' is not
+                                  ;; separated from ']'.
+                                  (bind ((*readtable* (copy-readtable)))
+                                    (set-syntax-from-char end-character #\) *readtable*)
+                                    (read-delimited-list end-character stream t))
+                                  (read stream t nil t))))
+                   (if (functionp quasi-quote-wrapper)
+                       (funcall quasi-quote-wrapper body)
+                       (list quasi-quote-wrapper body))))))
            (nested-quasi-quote-reader (stream char)
              (declare (ignore char))
              (assert (>= (symbol-value quasi-quote-nesting-level-variable) 1))

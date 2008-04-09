@@ -68,13 +68,15 @@ that adds its two arguments."
   (if end-character
       (named-lambda lambda-with-bang-args-reader (stream char)
         (declare (ignore char))
-        (bind ((*readtable* (copy-readtable *readtable*)))
+        (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
+               (*readtable* (copy-readtable *readtable*)))
           (set-syntax-from-char end-character #\) *readtable*)
           (bind ((body (read-delimited-list end-character stream t)))
             `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil))))
       (named-lambda lambda-with-bang-args-reader (stream subchar numeric-arg)
         (declare (ignore subchar))
-        (bind ((body (read stream t nil t)))
+        (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
+               (body (read stream t nil t)))
           `(lambda-with-bang-args-expander ,(package-name *package*) ,body ,numeric-arg)))))
 
 (defmacro lambda-with-bang-args-expander (package-designator body min-args &environment env)

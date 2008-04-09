@@ -13,6 +13,7 @@
    #:cl-source-file-with-readtable
    #:system-with-readtable
    #:define-syntax
+   #:*toplevel-readtable*
 
    #:√
    #:∛
