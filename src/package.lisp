@@ -14,6 +14,7 @@
    #:system-with-readtable
    #:define-syntax
    #:*toplevel-readtable*
+   #:*quasi-quote-nesting-level*
 
    #:√
    #:∛
