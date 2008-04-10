@@ -8,7 +8,6 @@
 
 (defsuite* (test/quasi-quote :in test))
 
-(defvar *my-quasi-quote-nesting-level*)
 
 (define-syntax my-quasi-quote (&key (nested-quasi-quote-wrapper 'my-quote)
                                     (start-character #\`)
@@ -18,7 +17,7 @@
                                     (splice-character #\@))
   ;; define a custom quasi-quote syntax. this way we need to write less
   ;; code to set up the readtime-wrapper syntax in the tests.
-  (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote '*my-quasi-quote-nesting-level*
+  (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote
                                        :nested-quasi-quote-wrapper nested-quasi-quote-wrapper
                                        :start-character start-character
                                        :dispatch-character dispatch-character
@@ -68,9 +67,9 @@
              (read-from-string
               "{with-my-quasi-quote-syntax
                 `(1 2 ,(list 3 `(4 ,@5)))}")))
-  (is (equal '(my-quote (1 2 (my-nested-quote (3 (my-unquote 4 t) (my-unquote (my-unquote 5 nil) nil)))))
+  (is (equal '(my-quote (1 2 (my-quote (3 (my-unquote 4 t) (my-unquote (my-unquote 5 nil) nil)))))
              (read-from-string
-              "{(with-my-quasi-quote-syntax :nested-quasi-quote-wrapper 'my-nested-quote)
+              "{(with-my-quasi-quote-syntax)
                 `(1 2 `(3 ,@4 ,,5))}"))))
 
 (deftest test/quasi-quote/end-character-reader-restoration ()
