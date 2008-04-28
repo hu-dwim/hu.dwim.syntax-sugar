@@ -15,6 +15,7 @@
    #:define-syntax
    #:*toplevel-readtable*
    #:*quasi-quote-nesting-level*
+   #:get-macro-character*
 
    #:√
    #:∛
