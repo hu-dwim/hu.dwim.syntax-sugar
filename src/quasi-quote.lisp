@@ -86,9 +86,9 @@
                    ;; restore the original readers when we are leaving our nesting. this way it's possible
                    ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
                    (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
-                   (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character unquote-character entering-readtable)))
-                   (when end-character
-                     (apply 'set-macro-character end-character (multiple-value-list (get-macro-character end-character entering-readtable))))
+                   (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character* unquote-character entering-readtable)))
+                   ;; we don't restore the reader on the end character, if there was any, because that
+                   ;; would break things like [a ,b] due to a #\] being nonterminating by default.
                    (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader)))
                  (bind ((body (read stream t nil t)))
                    (if (functionp unquote-wrapper)
