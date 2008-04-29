@@ -38,18 +38,3 @@
                         ,@result)
                      (first result))))))
        (export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name)))))
-
-(defun Σ (list)
-  (reduce #'+ list))
-
-(defun Π (list)
-  (reduce #'* list))
-
-(defmacro √ (number)
-  `(sqrt ,number))
-
-(defmacro ∛ (number)
-  `(expt ,number 1/3))
-
-(defmacro ∜ (number)
-  `(expt ,number 1/4))

@@ -16,16 +16,4 @@
    #:*toplevel-readtable*
    #:*quasi-quote-nesting-level*
    #:get-macro-character*
-
-   #:√
-   #:∛
-   #:∜
-
-   #:λ
-   #:α
-   #:β
-   #:γ
-   #:δ
-   #:ε
-   #:Σ
-   #:Π))
+   ))

@@ -24,7 +24,6 @@
 (in-package #:cl-syntax-sugar-system)
 
 (defsystem :cl-syntax-sugar
-  :version "0.1"
   :author ("Levente Mészáros <levente.meszaros@gmail.com>"
            "Attila Lendvai <attila.lendvai@gmail.com>")
   :licence "BSD / Public Domain"
@@ -39,6 +38,18 @@
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
+
+(defsystem :cl-syntax-sugar-unicode
+  :author ("Levente Mészáros <levente.meszaros@gmail.com>"
+           "Attila Lendvai <attila.lendvai@gmail.com>")
+  :licence "BSD / Public Domain"
+  :description "Extensions to cl-syntax-sugar using unicode characters"
+  :depends-on (:cl-syntax-sugar)
+  :components
+  ((:module "src"
+            :components ((:module "unicode-enabled"
+                                  :components ((:file "package")
+                                               (:file "one-liners" :depends-on ("package"))))))))
 
 (defsystem-connection cl-syntax-sugar-and-cl-walker
   :requires (:cl-syntax-sugar :cl-walker)
