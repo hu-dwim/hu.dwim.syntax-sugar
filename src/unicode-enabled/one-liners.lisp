@@ -4,7 +4,7 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :cl-syntax-sugar-unicode)
 
 (defun Σ (list)
   (reduce #'+ list))

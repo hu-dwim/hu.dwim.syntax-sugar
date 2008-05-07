@@ -66,7 +66,7 @@
 
 (defsystem :cl-syntax-sugar-test
   :description "Tests for the cl-syntax-sugar system."
-  :depends-on (:cl-syntax-sugar :cl-walker :stefil)
+  :depends-on (:cl-syntax-sugar :cl-syntax-sugar-unicode :cl-walker :stefil)
   :components
   ((:module "tests"
             :serial t

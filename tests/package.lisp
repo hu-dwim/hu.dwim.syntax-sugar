@@ -7,7 +7,16 @@
 (cl:in-package :common-lisp-user)
 
 (defpackage :cl-syntax-sugar-test
-  (:use #:common-lisp :cl-syntax-sugar :cl-walker :stefil :alexandria :metabang-bind :iterate)
+  (:use
+   #:common-lisp
+   :cl-syntax-sugar
+   :cl-syntax-sugar-unicode
+   :cl-walker
+   :stefil
+   :alexandria
+   :metabang-bind
+   :iterate
+   )
 
   (:export
    #:test

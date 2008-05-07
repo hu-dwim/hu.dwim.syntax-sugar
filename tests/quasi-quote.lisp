@@ -61,6 +61,13 @@
                                               :splice-character #\\!)
                   {1 2 ;3 ;!4 5}}")))))
 
+(deftest test/quasi-quote/sharp-dot-readtable-case ()
+  (enable-readtime-wrapper-syntax)
+  (is (equal '(my-quote (1 "FOO"))
+             (read-from-string
+              "{with-my-quasi-quote-syntax
+                `(1 #.(symbol-name 'foo))}"))))
+
 (deftest test/quasi-quote/nested ()
   (enable-readtime-wrapper-syntax)
   (is (equal '(my-quote (1 2 (my-unquote (list 3 (my-quote (4 (my-unquote 5 t)))) nil)))
