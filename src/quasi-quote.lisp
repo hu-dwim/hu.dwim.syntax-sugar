@@ -47,6 +47,13 @@
                     (*toplevel-readtable* (or *toplevel-readtable* *readtable*))
                     (*readtable* (copy-readtable)))
                (set-macro-character unquote-character (make-unquote-reader entering-quasi-quote-nesting-level entering-readtable))
+               (bind ((original-sharp-dot-reader (get-dispatch-macro-character #\# #\.)))
+                 ;; make sure #. reader is called in the respored readtable-case.
+                 ;; TODO this should be generalized to wrap all the readers installed in the readtable? probably it's not worth the trouble...
+                 (set-dispatch-macro-character #\# #\. (lambda (&rest args)
+                                                         (bind ((*readtable* (copy-readtable)))
+                                                           (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                                                           (apply original-sharp-dot-reader args)))))
                (when end-character
                  (set-macro-character start-character (make-nested-quasi-quote-reader entering-quasi-quote-nesting-level)))
                (when readtable-case
