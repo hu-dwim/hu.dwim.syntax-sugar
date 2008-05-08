@@ -48,6 +48,8 @@ that adds its two arguments."
     (error "You may either install this syntax on a dispatching macro character or on start/end characters"))
   (assert (not (xor dispatch-character sub-dispatch-character)))
   (assert (not (xor start-character end-character)))
+  (unless (or dispatch-character start-character)
+    (error "You must specify on which character(s) the lambda-with-bang-args syntax should be enabled!"))
   (if dispatch-character
       (progn
         (unless (get-macro-character dispatch-character)
