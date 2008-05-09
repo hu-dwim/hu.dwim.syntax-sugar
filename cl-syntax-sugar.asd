@@ -37,7 +37,8 @@
                          (:file "syntax-sugar" :depends-on ("duplicates"))
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
-                         (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
+                         (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
+                         (:file "string-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
 
 (defsystem :cl-syntax-sugar-unicode
   :author ("Levente Mészáros <levente.meszaros@gmail.com>"
@@ -79,6 +80,7 @@
                          (:file "test-environment")
                          (:file "readtime-wrapper")
                          (:file "quasi-quote")
+                         (:file "string-quote")
                          (:file "lambda")
                          (:file "sharp-l" :depends-on ("lambda"))))))
 

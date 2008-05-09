@@ -29,8 +29,9 @@
 (in-package :cl-syntax-sugar-test)
 
 (defun setup-readtable ()
-  ;; this is the single reader we enable in the toplevel test package.
-  (enable-readtime-wrapper-syntax))
+  ;; these are the readers that we enable in the toplevel test package.
+  (enable-readtime-wrapper-syntax)
+  (enable-string-quote-syntax #\｢ #\｣))
 
 (register-readtable-for-swank
  '(:cl-syntax-sugar-test) 'setup-readtable)
@@ -47,5 +48,5 @@
         ',name ,setup-readtable-name))))
 
 (define-test-package-with-syntax :cl-syntax-sugar-test.sharp-l
-  (enable-readtime-wrapper-syntax)
+  (setup-readtable)
   (enable-sharp-l-syntax))
