@@ -8,15 +8,15 @@
 
 (defsuite* (test/quasi-quote :in test))
 
+;; define a custom quasi-quote syntax. this way we need to write less
+;; code to set up the readtable using the readtime-wrapper syntax in the tests.
 
-(define-syntax my-quasi-quote (&key (nested-quasi-quote-wrapper 'my-quote)
+(define-syntax my-quasi-quote (&key (nested-quasi-quote-wrapper ''my-quote)
                                     (start-character #\`)
                                     end-character
                                     dispatch-character
                                     (unquote-character #\,)
                                     (splice-character #\@))
-  ;; define a custom quasi-quote syntax. this way we need to write less
-  ;; code to set up the readtime-wrapper syntax in the tests.
   (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote
                                        :nested-quasi-quote-wrapper nested-quasi-quote-wrapper
                                        :start-character start-character
@@ -24,6 +24,17 @@
                                        :end-character end-character
                                        :unquote-character unquote-character
                                        :splice-character splice-character))
+
+;; we need to define a standalone syntax for the dispatched-quasi-quote version,
+;; because they can't use both the #\` character...
+(define-syntax my-dispatched-quasi-quote (&key (nested-quasi-quote-wrapper ''my-quote)
+                                               (unquote-character #\,)
+                                               (splice-character #\@))
+  (set-quasi-quote-syntax-in-readtable 'my-quote 'my-unquote
+                                       :nested-quasi-quote-wrapper nested-quasi-quote-wrapper
+                                       :unquote-character unquote-character
+                                       :splice-character splice-character
+                                       :dispatched-quasi-quote-name "my-qq"))
 
 (deftest test/quasi-quote/simple ()
   (enable-readtime-wrapper-syntax)
@@ -100,3 +111,12 @@
                  (my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))
                  42)))))
 
+
+(defsuite* (test/dispatched-quasi-quote :in test))
+
+(deftest test/dispatched-quasi-quote/simple ()
+  (enable-my-dispatched-quasi-quote-syntax)
+  (is (equal '(my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))
+             (read-from-string "`my-qq(1 2 ,3 ,@4 5)")))
+  (is (equal '(1 2 3)
+             (eval (read-from-string "`(1 2 ,(+ 1 2))")))))
