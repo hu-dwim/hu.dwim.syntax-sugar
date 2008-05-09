@@ -32,7 +32,6 @@
   ;; this is the single reader we enable in the toplevel test package.
   (enable-readtime-wrapper-syntax))
 
-#+#.(cl:when (cl:find-package "SWANK") '(:and))
 (register-readtable-for-swank
  '(:cl-syntax-sugar-test) 'setup-readtable)
 
@@ -44,7 +43,6 @@
        (setf (fdefinition ,setup-readtable-name)
              (lambda ()
                ,@body))
-       #+#.(cl:when (cl:find-package "SWANK") '(:and))
        (register-readtable-for-swank
         ',name ,setup-readtable-name))))
 
