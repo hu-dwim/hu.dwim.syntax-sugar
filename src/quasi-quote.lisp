@@ -36,7 +36,8 @@
                                           toplevel-reader-wrapper
                                           readtable-case)))
     (cond
-      (dispatch-character
+      ((and dispatch-character
+            start-character)
        (unless (get-macro-character dispatch-character)
          (make-dispatch-macro-character dispatch-character))
        (set-dispatch-macro-character dispatch-character start-character reader *readtable*))
