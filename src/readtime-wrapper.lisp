@@ -6,7 +6,7 @@
 
 (in-package :cl-syntax-sugar)
 
-(export '(with-package))
+(export '(with-package with-readtable-case))
 
 (define-syntax readtime-wrapper (&optional (start-character #\{) (end-character #\}))
   "A utility read macro for modifying the read table.
@@ -49,3 +49,18 @@ Will always read COMMON-LISP:T, no matter what the current package actually is."
                  ,@result)
               (first result))
           result))))
+
+(defun with-readtable-case (case)
+  "When used as a specifier for the READTIME-WRAPPER syntax, it changes the readtable-case while reading its body. Behaves as an implicit progn.
+
+Example: {(with-readtable-case :preserve) 'fOo} => |fOo|"
+  (lambda (reader)
+    (bind ((*readtable* (copy-readtable *readtable*)))
+      (setf (readtable-case *readtable*) case)
+      (bind ((result (funcall reader)))
+        (if (consp result)
+            (if (rest result)
+                `(progn
+                   ,@result)
+                (first result))
+            result)))))
