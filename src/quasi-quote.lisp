@@ -9,9 +9,6 @@
 (defparameter *quasi-quote-nesting-level* 0
   "The read-time nesting level of the quasi-quote readers.")
 
-(defparameter *dispatched-quasi-quote-package* (or (find-package 'dispatched-quasi-quote-reader-names)
-                                                   (make-package 'dispatched-quasi-quote-reader-names)))
-
 (define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper
                                                 &key
                                                 (nested-quasi-quote-wrapper quasi-quote-wrapper)
@@ -76,9 +73,9 @@
                (assert (char= start-character char))
                (if (char= (elt dispatched-quasi-quote-name 0)
                           (peek-char nil stream t nil t))
-                   (bind ((name (bind ((*package* *dispatched-quasi-quote-package*))
-                                  (read stream t nil t))))
-                     (if (string= (string-downcase name) dispatched-quasi-quote-name)
+                   (bind ((name (read stream t nil t)))
+                     (if (or (eq name dispatched-quasi-quote-name)
+                             (string= (string-downcase name) (string-downcase dispatched-quasi-quote-name)))
                          (read-quasi-quote t stream)
                          (if previous-reader-on-backtick
                              (funcall previous-reader-on-backtick stream char)
