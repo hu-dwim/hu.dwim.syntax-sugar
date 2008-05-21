@@ -55,6 +55,8 @@
                                                           readtable-case)))
         (set-macro-character #\` dispatching-reader t *readtable*)))))
 
+(defparameter *dispatched-quasi-quote-name* nil)
+
 (defun make-quasi-quote-reader (dispatched-quasi-quote-name previous-reader-on-backtick
                                 start-character end-character
                                 quasi-quote-wrapper nested-quasi-quote-wrapper
@@ -62,8 +64,6 @@
                                 splice-character
                                 toplevel-reader-wrapper
                                 readtable-case)
-  (when dispatched-quasi-quote-name
-    (setf dispatched-quasi-quote-name (string-downcase dispatched-quasi-quote-name)))
   (when (and dispatched-quasi-quote-name
              end-character)
     (error "What?! dispatched-quasi-quote is always installed on #\` and should not have an end-character..."))
@@ -74,18 +74,24 @@
              (dispatching-toplevel-quasi-quote-reader (stream char)
                (assert dispatched?)
                (assert (char= start-character char))
-               (if (char= (elt dispatched-quasi-quote-name 0)
-                          (peek-char nil stream t nil t))
-                   (bind ((name (read stream t nil t)))
+               (if (or *dispatched-quasi-quote-name*
+                       (char-equal (elt (string dispatched-quasi-quote-name) 0)
+                                   (peek-char nil stream t nil t)))
+                   (bind ((name (or *dispatched-quasi-quote-name*
+                                    (read stream t nil t))))
                      (if (or (eq name dispatched-quasi-quote-name)
                              (string= (string-downcase name) (string-downcase dispatched-quasi-quote-name)))
-                         (read-quasi-quote t stream)
-                         (if previous-reader-on-backtick
-                             (funcall previous-reader-on-backtick stream char)
-                             (simple-reader-error stream "Missing ~S at the end of a dispatched quasi quote block!" end-character))))
+                         (bind ((*dispatched-quasi-quote-name* nil))
+                           (read-quasi-quote t stream))
+                         (bind ((*dispatched-quasi-quote-name* name))
+                           ;; FIXME this will do something horribly wrong for a `foo()
+                           ;; if there's no handler for it and the default reader is called.
+                           (if previous-reader-on-backtick
+                               (funcall previous-reader-on-backtick stream char)
+                               (simple-reader-error stream "No dispatched quasi-quote reader with name ~S" dispatched-quasi-quote-name)))))
                    (if previous-reader-on-backtick
-                       (funcall previous-reader-on-backtick stream start-character)
-                       (simple-reader-error stream "No dispatched quasi-quote reader with that name"))))
+                       (funcall previous-reader-on-backtick stream char)
+                       (simple-reader-error stream "No dispatched quasi-quote reader with name ~S" dispatched-quasi-quote-name))))
              (read-quasi-quote (dispatched? stream)
                (bind ((entering-readtable *readtable*)
                       (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
