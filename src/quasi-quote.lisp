@@ -6,8 +6,11 @@
 
 (in-package :cl-syntax-sugar)
 
+(defparameter *quasi-quote-depth* 0
+  "The absolute level of read-time (lexical) nesting of the quasi-quote readers. It does not decrease at unquotes.")
+
 (defparameter *quasi-quote-nesting-level* 0
-  "The read-time nesting level of the quasi-quote readers.")
+  "The read-time (lexical) nesting level of the quasi-quote readers, decreases when going through unquotes.")
 
 (define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper
                                                 &key
@@ -86,6 +89,7 @@
              (read-quasi-quote (dispatched? stream)
                (bind ((entering-readtable *readtable*)
                       (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
+                      (*quasi-quote-depth* (1+ *quasi-quote-depth*))
                       (*quasi-quote-nesting-level* (1+ *quasi-quote-nesting-level*))
                       (*toplevel-readtable* (or *toplevel-readtable* *readtable*))
                       (*readtable* (copy-readtable)))
