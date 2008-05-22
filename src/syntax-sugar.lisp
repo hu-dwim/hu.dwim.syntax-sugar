@@ -16,7 +16,7 @@
          (readtime-wrapper-name (format-symbol *package* "WITH-~A-SYNTAX" name))
          ((:values body declarations documentation) (parse-body body :documentation t :whole whole)))
     `(progn
-       (defmacro ,enabler-name ,args
+       (defmacro ,enabler-name ,(lambda-list-to-lambda-list-with-quoted-defaults args)
          ,documentation
          `(eval-when (:compile-toplevel :execute)
             (setf *readtable* (copy-readtable *readtable*))
