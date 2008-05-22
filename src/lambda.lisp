@@ -100,7 +100,7 @@ that adds its two arguments."
            ,form)))))
 
 (defun find-highest-bang-var (form env)
-  (with-walker-configuration (:warn-for-undefined-references nil)
+  (with-walker-configuration (:undefined-reference-handler nil)
     (flet ((bang-var-p (form)
              (and (starts-with #\! (symbol-name form) :test #'char=)
                   (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
