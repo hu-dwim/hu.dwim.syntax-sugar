@@ -6,8 +6,6 @@
 
 (in-package :cl-syntax-sugar)
 
-(export 'register-readtable-for-swank)
-
 (defun register-readtable-for-swank (&rest package-name/readtable-setup-function-pairs)
   (loop
      :for (package-names setup-function)
