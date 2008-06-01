@@ -22,6 +22,10 @@
                                                 (splice-character #\@)
                                                 dispatched-quasi-quote-name
                                                 (toplevel-reader-wrapper #'identity)
+                                                ;; body-reader is called with the stream to read the quasi quoted body
+                                                ;; when it's actually time to read the body. by default the normal
+                                                ;; lisp reader is called (with possible readtable customizations).
+                                                body-reader
                                                 readtable-case)
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))
@@ -34,6 +38,7 @@
                                           unquote-character unquote-wrapper
                                           splice-character
                                           toplevel-reader-wrapper
+                                          body-reader
                                           readtable-case)))
     (cond
       ((and dispatch-character
@@ -52,6 +57,7 @@
                                                           unquote-character unquote-wrapper
                                                           splice-character
                                                           toplevel-reader-wrapper
+                                                          body-reader
                                                           readtable-case)))
         (set-macro-character #\` dispatching-reader t *readtable*)))))
 
@@ -63,6 +69,7 @@
                                 unquote-character unquote-wrapper
                                 splice-character
                                 toplevel-reader-wrapper
+                                body-reader
                                 readtable-case)
   (when (and dispatched-quasi-quote-name
              end-character)
@@ -92,6 +99,21 @@
                    (if previous-reader-on-backtick
                        (funcall previous-reader-on-backtick stream char)
                        (simple-reader-error stream "No dispatched quasi-quote reader with name ~S" dispatched-quasi-quote-name))))
+             (read-quasi-quoted-body (stream)
+               (if (and body-reader
+                        (not dispatched?))
+                   (funcall body-reader stream)
+                   (if end-character
+                       (bind ((*readtable* (copy-readtable)))
+                         ;; we must set the syntax on the end char to be like #\)
+                         ;; until we read out our entire body. this is needed to
+                         ;; make "[... 5] style inputs work where '5' is not
+                         ;; separated from ']'.
+                         ;; doin this is not necessary when invoked from the nested reader
+                         ;; but doesn't hurt either. wastes some cycles, but...
+                         (set-syntax-from-char end-character #\) *readtable*)
+                         (read-delimited-list end-character stream t))
+                       (read stream t nil t))))
              (read-quasi-quote (dispatched? stream)
                (bind ((entering-readtable *readtable*)
                       (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
@@ -114,15 +136,7 @@
                    (set-macro-character start-character (make-nested-quasi-quote-reader entering-quasi-quote-nesting-level)))
                  (when readtable-case
                    (setf (readtable-case *readtable*) readtable-case))
-                 (bind ((body (if end-character
-                                  ;; we must set the syntax on the end char to be like #\)
-                                  ;; until we read out our entire body. this is needed to
-                                  ;; make "[... 5] style inputs work where '5' is not
-                                  ;; separated from ']'.
-                                  (bind ((*readtable* (copy-readtable)))
-                                    (set-syntax-from-char end-character #\) *readtable*)
-                                    (read-delimited-list end-character stream t))
-                                  (read stream t nil t))))
+                 (bind ((body (read-quasi-quoted-body stream)))
                    (if (functionp quasi-quote-wrapper)
                        (funcall quasi-quote-wrapper body dispatched?)
                        (list quasi-quote-wrapper body)))))
@@ -130,9 +144,7 @@
                (named-lambda nested-quasi-quote-reader (stream char)
                  (declare (ignore char))
                  (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
-                 (bind ((body (if end-character
-                                  (read-delimited-list end-character stream t)
-                                  (read stream t nil t))))
+                 (bind ((body (read-quasi-quoted-body stream)))
                    (if (functionp nested-quasi-quote-wrapper)
                        (funcall nested-quasi-quote-wrapper body dispatched?)
                        (list nested-quasi-quote-wrapper body)))))
