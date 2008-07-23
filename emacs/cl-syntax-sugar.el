@@ -60,6 +60,7 @@
 			nil))))))
 
 (defun cl-syntax-sugar-install-greek-letter-rules ()
+  "Installs some rules that display the written greek letter names using the single character of the greek letter."
   (let ((char-code #X03B1))
     (dolist (name '("alpha" "beta" "gamma" "delta" "epsilon" "zeta" "eta"
                     "theta" "iota" "kappa" "lambda" "mu" "nu" "xi" "omicron"
@@ -71,6 +72,7 @@
       (incf char-code))))
 
 (defun cl-syntax-sugar-install-square-bracket-lambda-rule ()
+  "Installs some rules that displays [... !1 ...] as λ[... !1 ...] with the brackets colored."
   (font-lock-add-keywords
    nil `(("\\(\\[\\).*?!.*?\\(\\]\\)"
           (0 (progn
