@@ -44,3 +44,24 @@
   `(bind ((*readtable* (copy-readtable *readtable*)))
      ,@body))
 
+(defun list-readers (&optional (*readtable* *readtable*))
+  "A very slow utility for REPL use."
+  (loop
+     :with result = '()
+     :for code :from 0 :below char-code-limit
+     :for char = (code-char code)
+     :do (bind (((:values fun non-terminating?) (get-macro-character char)))
+           (when (or fun
+                     non-terminating?)
+             (push (list char
+                         fun non-terminating?
+                         (when (ignore-errors
+                                 (get-dispatch-macro-character char #\a)
+                                 t)
+                           (loop
+                              :for code :from 0 :below char-code-limit
+                              :for sub = (code-char code)
+                              :for fun = (get-dispatch-macro-character char sub)
+                              :when fun
+                              :collect (list sub fun)))) result)))
+     :finally (return result)))
