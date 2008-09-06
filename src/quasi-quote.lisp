@@ -84,7 +84,7 @@
                (read-quasi-quote nil stream))
              (read-using-original-reader (stream char)
                (if previous-reader-on-backtick
-                   (bind ((*readtable* (copy-readtable)))
+                   (with-local-readtable
                      (set-macro-character #\, previous-reader-on-comma)
                      (funcall previous-reader-on-backtick stream char))
                    (simple-reader-error stream "No dispatched quasi-quote reader with name ~S" dispatched-quasi-quote-name)))
@@ -110,7 +110,7 @@
                         (not dispatched?))
                    (funcall body-reader stream)
                    (if end-character
-                       (bind ((*readtable* (copy-readtable)))
+                       (with-local-readtable
                          ;; we must set the syntax on the end char to be like #\)
                          ;; until we read out our entire body. this is needed to
                          ;; make "[... 5] style inputs work where '5' is not
@@ -125,27 +125,27 @@
                       (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
                       (*quasi-quote-depth* (1+ *quasi-quote-depth*))
                       (*quasi-quote-nesting-level* (1+ *quasi-quote-nesting-level*))
-                      (*toplevel-readtable* (or *toplevel-readtable* *readtable*))
-                      (*readtable* (copy-readtable)))
-                 (set-macro-character unquote-character (make-unquote-reader entering-quasi-quote-nesting-level entering-readtable))
-                 (bind ((original-sharp-dot-reader (get-dispatch-macro-character #\# #\.)))
-                   ;; make sure #. reader is called in the restored readtable-case.
-                   ;; TODO this should be generalized to wrap all the readers installed in the readtable? probably it's not worth the trouble...
-                   (set-dispatch-macro-character #\# #\. (lambda (&rest args)
-                                                           (bind ((*readtable* (copy-readtable)))
-                                                             (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
-                                                             (apply original-sharp-dot-reader args)))))
-                 (when end-character
-                   ;; there's no point in handling nesting when we are installed on a pair of parens.
-                   ;; e.g. in <element <child>> child should not be qq wrapped... so, we enable a
-                   ;; special nested reader when we are installed on a pair of parens.
-                   (set-macro-character start-character (make-nested-quasi-quote-reader entering-quasi-quote-nesting-level)))
-                 (when readtable-case
-                   (setf (readtable-case *readtable*) readtable-case))
-                 (bind ((body (read-quasi-quoted-body stream)))
-                   (if (functionp quasi-quote-wrapper)
-                       (funcall quasi-quote-wrapper body dispatched?)
-                       (list quasi-quote-wrapper body)))))
+                      (*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
+                 (with-local-readtable
+                   (set-macro-character unquote-character (make-unquote-reader entering-quasi-quote-nesting-level entering-readtable))
+                   (bind ((original-sharp-dot-reader (get-dispatch-macro-character #\# #\.)))
+                     ;; make sure #. reader is called in the restored readtable-case.
+                     ;; TODO this should be generalized to wrap all the readers installed in the readtable? probably it's not worth the trouble...
+                     (set-dispatch-macro-character #\# #\. (lambda (&rest args)
+                                                             (with-local-readtable
+                                                               (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                                                               (apply original-sharp-dot-reader args)))))
+                   (when end-character
+                     ;; there's no point in handling nesting when we are installed on a pair of parens.
+                     ;; e.g. in <element <child>> child should not be qq wrapped... so, we enable a
+                     ;; special nested reader when we are installed on a pair of parens.
+                     (set-macro-character start-character (make-nested-quasi-quote-reader entering-quasi-quote-nesting-level)))
+                   (when readtable-case
+                     (setf (readtable-case *readtable*) readtable-case))
+                   (bind ((body (read-quasi-quoted-body stream)))
+                     (if (functionp quasi-quote-wrapper)
+                         (funcall quasi-quote-wrapper body dispatched?)
+                         (list quasi-quote-wrapper body))))))
              (make-nested-quasi-quote-reader (entering-quasi-quote-nesting-level)
                (named-lambda nested-quasi-quote-reader (stream char)
                  (declare (ignore char))
@@ -157,25 +157,25 @@
              (make-unquote-reader (entering-quasi-quote-nesting-level entering-readtable)
                (named-lambda unquote-reader (stream char)
                  (declare (ignore char))
-                 (bind ((*readtable* (copy-readtable)) ; this is only needed when actually restoring the original readers, but then it's needed inside the recursive READ call down at the end, so wrap it all up with a copy
-                        (*quasi-quote-nesting-level* (1- *quasi-quote-nesting-level*))
-                        (spliced? (char= (peek-char nil stream t nil t) splice-character)))
-                   (when spliced?
-                     (read-char stream t nil t))
-                   (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
-                   (when (= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
-                     ;; restore the original readers when we are leaving our nesting. this way it's possible
-                     ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
-                     (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
-                     (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character* unquote-character entering-readtable)))
-                     ;; we don't restore the reader on the end character, if there was any, because that
-                     ;; would break things like [a ,b] due to a #\] being nonterminating by default.
-                     (when end-character
-                       (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader))))
-                   (bind ((body (read stream t nil t)))
-                     (if (functionp unquote-wrapper)
-                         (funcall unquote-wrapper body spliced?)
-                         (list unquote-wrapper body spliced?)))))))
+                 (with-local-readtable ; this is only needed when actually restoring the original readers, but then it's needed inside the recursive READ call down at the end, so wrap it all up with a copy
+                   (bind ((*quasi-quote-nesting-level* (1- *quasi-quote-nesting-level*))
+                          (spliced? (char= (peek-char nil stream t nil t) splice-character)))
+                     (when spliced?
+                       (read-char stream t nil t))
+                     (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
+                     (when (= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
+                       ;; restore the original readers when we are leaving our nesting. this way it's possible
+                       ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
+                       (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                       (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character* unquote-character entering-readtable)))
+                       ;; we don't restore the reader on the end character, if there was any, because that
+                       ;; would break things like [a ,b] due to a #\] being nonterminating by default.
+                       (when end-character
+                         (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader))))
+                     (bind ((body (read stream t nil t)))
+                       (if (functionp unquote-wrapper)
+                           (funcall unquote-wrapper body spliced?)
+                           (list unquote-wrapper body spliced?))))))))
       (funcall toplevel-reader-wrapper
                (if dispatched?
                    #'dispatching-toplevel-quasi-quote-reader

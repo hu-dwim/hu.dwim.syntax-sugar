@@ -11,7 +11,7 @@
      :for (package-names setup-function)
      :on package-name/readtable-setup-function-pairs
      :by #'cddr :do
-     (bind ((*readtable* (copy-readtable)))
+     (with-local-readtable
        (funcall setup-function)
        (dolist (package-name (ensure-list package-names))
          (setf package-name (string package-name))

@@ -38,3 +38,9 @@
                         ,@result)
                      (first result))))))
        (export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name)))))
+
+(defmacro with-local-readtable (&body body)
+  "Rebind a copy of *readtable*."
+  `(bind ((*readtable* (copy-readtable *readtable*)))
+     ,@body))
+

@@ -21,16 +21,16 @@ Where SPECIFIER is either a symbol naming a function (available at read time) or
 (defun make-readtime-wrapper-reader (end-character)
   (named-lambda readtime-wrapper-reader (stream char)
     (declare (ignore char))
-    (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
-           (*readtable* (copy-readtable *readtable*))
-           ((specifier &rest arguments) (bind ((*readtable* (copy-readtable *readtable*)))
-                                          ;; restore the readtable case of the toplevel readtable while reading the first form
-                                          (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
-                                          (ensure-list (read stream t nil t)))))
-      (set-syntax-from-char end-character #\) *readtable*)
-      (funcall (apply specifier (mapcar #'eval arguments))
-               (lambda ()
-                 (read-delimited-list end-character stream t))))))
+    (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
+      (with-local-readtable
+        (bind (((specifier &rest arguments) (with-local-readtable
+                                              ;; restore the readtable case of the toplevel readtable while reading the first form
+                                              (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                                              (ensure-list (read stream t nil t)))))
+          (set-syntax-from-char end-character #\) *readtable*)
+          (funcall (apply specifier (mapcar #'eval arguments))
+                   (lambda ()
+                     (read-delimited-list end-character stream t))))))))
 
 (defun with-package (package-name)
   "When used as a specifier for the READTIME-WRAPPER syntax, it locally rebinds at read time the current package to PACKAGE-NAME.
@@ -55,7 +55,7 @@ Will always read COMMON-LISP:T, no matter what the current package actually is."
 
 Example: {(with-readtable-case :preserve) 'fOo} => |fOo|"
   (lambda (reader)
-    (bind ((*readtable* (copy-readtable *readtable*)))
+    (with-local-readtable
       (setf (readtable-case *readtable*) case)
       (bind ((result (funcall reader)))
         (if (consp result)

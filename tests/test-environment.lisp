@@ -13,7 +13,7 @@
   `(stefil:deftest ,name ,args
      ;; it's not strictly necessary because Stefil rebinds and copies *readtable* but let's
      ;; just don't test Stefil itself and make sure we have a cloned readtable.
-     (bind ((*readtable* (copy-readtable *readtable*)))
+     (with-local-readtable
        ;; it's pretty much needed for anything we do in the tests
        (enable-readtime-wrapper-syntax)
        ;; Stefil captures the value of *package* at compile time and binds it when running

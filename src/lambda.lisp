@@ -70,11 +70,11 @@ that adds its two arguments."
   (if end-character
       (named-lambda lambda-with-bang-args-reader (stream char)
         (declare (ignore char))
-        (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
-               (*readtable* (copy-readtable *readtable*)))
-          (set-syntax-from-char end-character #\) *readtable*)
-          (bind ((body (read-delimited-list end-character stream t)))
-            `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil))))
+        (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
+          (with-local-readtable
+            (set-syntax-from-char end-character #\) *readtable*)
+            (bind ((body (read-delimited-list end-character stream t)))
+              `(lambda-with-bang-args-expander ,(package-name *package*) ,body nil)))))
       (named-lambda lambda-with-bang-args-reader (stream subchar numeric-arg)
         (declare (ignore subchar))
         (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*))
