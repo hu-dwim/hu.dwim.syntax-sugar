@@ -6,8 +6,7 @@
 
 (in-package :cl-syntax-sugar-test)
 
-(in-root-suite)
-(defsuite* test)
+(defsuite* (test :in root-suite))
 
 (defmacro deftest (name args &body body)
   `(stefil:deftest ,name ,args

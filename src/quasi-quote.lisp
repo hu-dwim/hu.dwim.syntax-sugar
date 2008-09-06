@@ -83,6 +83,7 @@
                (declare (ignore char1 char2))
                (read-quasi-quote nil stream))
              (read-using-original-reader (stream char)
+               ;; KLUDGE this is a random workaround only. we should have our own ` reader...
                (if previous-reader-on-backtick
                    (with-local-readtable
                      (set-macro-character #\, previous-reader-on-comma)
