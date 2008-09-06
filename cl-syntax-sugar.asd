@@ -82,6 +82,7 @@
                          (:file "readtime-wrapper")
                          (:file "quasi-quote")
                          (:file "string-quote")
+                         (:file "feature-cond")
                          (:file "lambda")
                          (:file "sharp-l" :depends-on ("lambda"))))))
 
