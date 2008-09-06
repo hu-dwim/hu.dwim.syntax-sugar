@@ -38,6 +38,7 @@
                          (:file "one-liners" :depends-on ("duplicates" "syntax-sugar"))
                          (:file "readtime-wrapper" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          (:file "quasi-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
+                         (:file "feature-cond" :depends-on ("one-liners" "duplicates" "syntax-sugar"))
                          (:file "string-quote" :depends-on ("one-liners" "duplicates" "syntax-sugar"))))))
 
 (defsystem :cl-syntax-sugar-unicode
