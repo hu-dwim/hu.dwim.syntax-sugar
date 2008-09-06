@@ -66,26 +66,6 @@
   ((:module "src"
             :components ((:file "swank-integration")))))
 
-(defsystem :cl-syntax-sugar-test
-  :description "Tests for the cl-syntax-sugar system."
-  :depends-on (:cl-syntax-sugar
-               :cl-syntax-sugar-unicode
-               :cl-walker
-               :stefil
-               :swank
-               )
-  :components
-  ((:module "tests"
-            :serial t
-            :components ((:file "package")
-                         (:file "test-environment")
-                         (:file "readtime-wrapper")
-                         (:file "quasi-quote")
-                         (:file "string-quote")
-                         (:file "feature-cond")
-                         (:file "lambda")
-                         (:file "sharp-l" :depends-on ("lambda"))))))
-
 (defmethod perform ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
   (operate 'load-op :cl-syntax-sugar-test)
   (in-package :cl-syntax-sugar-test)
@@ -97,4 +77,3 @@
 
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :cl-syntax-sugar))))
   nil)
-
