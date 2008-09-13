@@ -6,7 +6,7 @@
 
 (in-package :cl-syntax-sugar)
 
-(export '(with-package with-readtable-case))
+(export '(with-package with-readtable-case with-preserved-readtable-case))
 
 (define-syntax readtime-wrapper (&optional (start-character #\{) (end-character #\}))
   "A utility read macro for modifying the read table.
@@ -64,3 +64,7 @@ Example: {(with-readtable-case :preserve) 'fOo} => |fOo|"
                    ,@result)
                 (first result))
             result)))))
+
+(defun with-preserved-readtable-case ()
+  "See WITH-READTABLE-CASE."
+  (with-readtable-case :preserve))
