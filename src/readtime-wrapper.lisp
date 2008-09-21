@@ -23,12 +23,13 @@ Where SPECIFIER is either a symbol naming a function (available at read time) or
     (declare (ignore char))
     (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
       (with-local-readtable
-        (bind (((specifier &rest arguments) (with-local-readtable
-                                              ;; restore the readtable case of the toplevel readtable while reading the first form
-                                              (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
-                                              (ensure-list (read stream t nil t)))))
+        (bind ((form (with-local-readtable
+                       ;; restore the readtable case of the toplevel readtable while reading the first form
+                       (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                       (ensure-list (read stream t nil t)))))
           (set-syntax-from-char end-character #\) *readtable*)
-          (funcall (apply specifier (mapcar #'eval arguments))
+          (funcall (bind (#+sbcl(sb-ext:*evaluator-mode* :interpret))
+                     (eval form))
                    (lambda ()
                      (read-delimited-list end-character stream t))))))))
 
