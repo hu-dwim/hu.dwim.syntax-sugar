@@ -12,6 +12,7 @@
   (:export
    #:cl-source-file-with-readtable
    #:system-with-readtable
+   #:system-connection-with-readtable
    #:define-syntax
    #:*toplevel-readtable*
    #:*quasi-quote-depth*

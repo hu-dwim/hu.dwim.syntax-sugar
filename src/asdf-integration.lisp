@@ -46,6 +46,9 @@
 (defclass system-with-readtable (asdf:system readtable-function-mixin)
   ())
 
+(defclass system-connection-with-readtable (asdf::system-connection readtable-function-mixin)
+  ())
+
 (defmethod asdf:perform :around ((op asdf:operation) (component cl-source-file-with-readtable))
   (bind ((*features* *features*)
          (*readtable* *readtable*)
