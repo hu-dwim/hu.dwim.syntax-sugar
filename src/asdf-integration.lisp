@@ -50,8 +50,7 @@
   ())
 
 (defmethod asdf:perform :around ((op asdf:operation) (component cl-source-file-with-readtable))
-  (bind ((*features* *features*)
-         (*readtable* *readtable*)
+  (bind ((*readtable* *readtable*)
          (system (loop :for parent = (asdf:component-parent component)
                                   :then (asdf:component-parent parent)
                        :while parent
