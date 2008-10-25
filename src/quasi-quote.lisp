@@ -20,6 +20,7 @@
                                                 end-character
                                                 (unquote-character #\,)
                                                 (splice-character #\@)
+                                                (destructive-splice-character #\.)
                                                 dispatched-quasi-quote-name
                                                 (toplevel-reader-wrapper #'identity)
                                                 ;; body-reader is called with the stream to read the quasi quoted body
@@ -37,6 +38,7 @@
                                           quasi-quote-wrapper nested-quasi-quote-wrapper
                                           unquote-character unquote-wrapper
                                           splice-character
+                                          destructive-splice-character
                                           toplevel-reader-wrapper
                                           body-reader
                                           readtable-case)))
@@ -58,6 +60,7 @@
                                                         quasi-quote-wrapper nested-quasi-quote-wrapper
                                                         unquote-character unquote-wrapper
                                                         splice-character
+                                                        destructive-splice-character
                                                         toplevel-reader-wrapper
                                                         body-reader
                                                         readtable-case)))
@@ -72,6 +75,7 @@
                                 quasi-quote-wrapper nested-quasi-quote-wrapper
                                 unquote-character unquote-wrapper
                                 splice-character
+                                destructive-splice-character
                                 toplevel-reader-wrapper
                                 body-reader
                                 readtable-case)
@@ -160,8 +164,10 @@
                  (declare (ignore char))
                  (with-local-readtable ; this is only needed when actually restoring the original readers, but then it's needed inside the recursive READ call down at the end, so wrap it all up with a copy
                    (bind ((*quasi-quote-nesting-level* (1- *quasi-quote-nesting-level*))
-                          (spliced? (char= (peek-char nil stream t nil t) splice-character)))
-                     (when spliced?
+                          (modifier (switch ((peek-char nil stream t nil t) :test 'char=)
+                                      (splice-character :splice)
+                                      (destructive-splice-character :destructive-splice))))
+                     (when modifier
                        (read-char stream t nil t))
                      (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
                      (when (= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
@@ -175,8 +181,8 @@
                          (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader))))
                      (bind ((body (read stream t nil t)))
                        (if (functionp unquote-wrapper)
-                           (funcall unquote-wrapper body spliced?)
-                           (list unquote-wrapper body spliced?))))))))
+                           (funcall unquote-wrapper body modifier)
+                           (list unquote-wrapper body modifier))))))))
       (funcall toplevel-reader-wrapper
                (if dispatched?
                    #'dispatching-toplevel-quasi-quote-reader
