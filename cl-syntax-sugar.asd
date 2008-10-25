@@ -19,7 +19,7 @@
     (try :asdf-system-connections)))
 
 (defpackage #:cl-syntax-sugar-system
-  (:use :cl :asdf :asdf-system-connections))
+  (:use :cl :asdf))
 
 (in-package #:cl-syntax-sugar-system)
 
