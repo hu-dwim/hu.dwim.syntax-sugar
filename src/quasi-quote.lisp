@@ -23,11 +23,13 @@
                                                 (destructive-splice-character #\.)
                                                 dispatched-quasi-quote-name
                                                 (toplevel-reader-wrapper #'identity)
+                                                unquote-readtable-case
                                                 ;; body-reader is called with the stream to read the quasi quoted body
                                                 ;; when it's actually time to read the body. by default the normal
                                                 ;; lisp reader is called (with possible readtable customizations).
                                                 body-reader
                                                 readtable-case)
+  (check-type unquote-readtable-case (member nil :toplevel :parent :upcase :downcase :preserve))
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))
   (when (and dispatched-quasi-quote-name
@@ -41,7 +43,8 @@
                                           destructive-splice-character
                                           toplevel-reader-wrapper
                                           body-reader
-                                          readtable-case)))
+                                          readtable-case
+                                          unquote-readtable-case)))
     (cond
       ((and dispatch-character
             start-character)
@@ -63,7 +66,8 @@
                                                         destructive-splice-character
                                                         toplevel-reader-wrapper
                                                         body-reader
-                                                        readtable-case)))
+                                                        readtable-case
+                                                        unquote-readtable-case)))
       (set-macro-character #\` dispatching-reader t *readtable*))))
 
 (defparameter *dispatched-quasi-quote-name* nil)
@@ -78,7 +82,8 @@
                                 destructive-splice-character
                                 toplevel-reader-wrapper
                                 body-reader
-                                readtable-case)
+                                readtable-case
+                                unquote-readtable-case)
   (when (and dispatched-quasi-quote-name
              end-character)
     (error "What?! dispatched-quasi-quote is always installed on #\` and should not have an end-character..."))
@@ -104,6 +109,7 @@
                      (if (or (eq name dispatched-quasi-quote-name)
                              (string= (string-downcase name) (string-downcase dispatched-quasi-quote-name)))
                          (bind ((*dispatched-quasi-quote-name* nil))
+                           ;; ok, we've got a match, read it in.
                            (read-quasi-quote t stream))
                          (bind ((*dispatched-quasi-quote-name* name))
                            ;; FIXME this will do something horribly wrong for a `foo()
@@ -171,12 +177,19 @@
                        (read-char stream t nil t))
                      (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
                      (when (= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
-                       ;; restore the original readers when we are leaving our nesting. this way it's possible
-                       ;; to use the ` and , in their normal meanings when being outside our own nesting levels.
-                       (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
+                       ;;; restore the original readers when we are leaving our nesting. this way it's possible
+                       ;;; to use the ` and , in their previous meanings when being outside our own nesting levels.
+                       ;;; we don't restore the reader on the end character, if there was any, because that
+                       ;;; would break things like [a ,b] due to a #\] being nonterminating by default.
+                       (when unquote-readtable-case
+                         (ecase unquote-readtable-case
+                           ((:upcase :downcase :preserve)
+                            (setf (readtable-case *readtable*) unquote-readtable-case))
+                           (:parent
+                            (setf (readtable-case *readtable*) (readtable-case entering-readtable)))
+                           (:toplevel
+                            (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*)))))
                        (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character* unquote-character entering-readtable)))
-                       ;; we don't restore the reader on the end character, if there was any, because that
-                       ;; would break things like [a ,b] due to a #\] being nonterminating by default.
                        (when end-character
                          (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader))))
                      (bind ((body (read stream t nil t)))
