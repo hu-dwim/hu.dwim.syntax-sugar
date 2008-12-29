@@ -98,11 +98,13 @@
       (labels ((toplevel-quasi-quote-reader (stream &optional char1 char2)
                  (declare (ignore char1 char2))
                  (log "TOPLEVEL-QUASI-QUOTE-READER entering")
+                 (setf previous-reader-on-comma (get-macro-character #\,))
                  (multiple-value-prog1
                      (read-quasi-quote nil stream)
                    (log "TOPLEVEL-QUASI-QUOTE-READER leaving")))
                (read-using-previous-reader (stream char)
                  (log "READ-USING-PREVIOUS-READER entering, previous-reader-on-backtick: ~A, previous-reader-on-comma: ~A" previous-reader-on-backtick previous-reader-on-comma)
+                 (assert previous-reader-on-comma)
                  (if previous-reader-on-backtick
                      (with-local-readtable
                        (set-macro-character #\, previous-reader-on-comma)
@@ -112,6 +114,7 @@
                  (log "DISPATCHING-TOPLEVEL-QUASI-QUOTE-READER entering, *dispatched-quasi-quote-name* ~S" *dispatched-quasi-quote-name*)
                  (assert dispatched?)
                  (assert (char= start-character char))
+                 (setf previous-reader-on-comma (get-macro-character #\,))
                  (if (or *dispatched-quasi-quote-name*
                          (char-equal (elt (string dispatched-quasi-quote-name) 0)
                                      (peek-char nil stream t nil t)))
@@ -145,7 +148,6 @@
                          (read stream t nil t))))
                (read-quasi-quote (dispatched? stream)
                  (log "READ-QUASI-QUOTE entering, unquote-reader on ~S is ~A" unquote-character (get-macro-character* unquote-character *readtable*))
-                 (setf previous-reader-on-comma (get-macro-character #\,))
                  (bind ((entering-readtable *readtable*)
                         (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
                         (*quasi-quote-depth* (1+ *quasi-quote-depth*))
