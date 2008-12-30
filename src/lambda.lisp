@@ -106,14 +106,14 @@ that adds its two arguments."
                   (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
            (collect-variable-references (top-form)
              (let ((result (list)))
-               (walk-ast top-form
-                         (lambda (form)
-                           (when (typep form '(or free-variable-reference-form
-                                               lexical-variable-reference-form))
-                             (push form result))
-                           (if (typep form 'lambda-function-form)
-                               nil
-                               t)))
+               (map-ast (lambda (form)
+                          (when (typep form '(or free-variable-reference-form
+                                              lexical-variable-reference-form))
+                            (push form result))
+                          (if (typep form 'lambda-function-form)
+                              nil ; don't descent any deeper
+                              form))
+                        top-form)
                result)))
       (or (loop
              :for var-form :in (collect-variable-references
