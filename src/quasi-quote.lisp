@@ -6,7 +6,7 @@
 
 (in-package :cl-syntax-sugar)
 
-(defparameter *quasi-quote-depth* 0
+(defparameter *quasi-quote-lexical-depth* 0
   "The absolute level of read-time (lexical) nesting of the quasi-quote readers. It does not decrease at unquotes.")
 
 (defparameter *quasi-quote-nesting-level* 0
@@ -88,7 +88,7 @@
                (declare (ignorable message args))
                #+nil
                `(progn
-                  (write-string (make-string (* 2 *quasi-quote-depth*) :initial-element #\Space) *debug-io*)
+                  (write-string (make-string (* 2 *quasi-quote-lexical-depth*) :initial-element #\Space) *debug-io*)
                   (format *debug-io* ,message ,@args)
                   (format *debug-io* " (dispatched-quasi-quote-name: ~S, start/end character: ~S ~S)" dispatched-quasi-quote-name start-character end-character)
                   (terpri *debug-io*)
@@ -150,7 +150,7 @@
                  (log "READ-QUASI-QUOTE entering, unquote-reader on ~S is ~A" unquote-character (get-macro-character* unquote-character *readtable*))
                  (bind ((entering-readtable *readtable*)
                         (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
-                        (*quasi-quote-depth* (1+ *quasi-quote-depth*))
+                        (*quasi-quote-lexical-depth* (1+ *quasi-quote-lexical-depth*))
                         (*quasi-quote-nesting-level* (1+ *quasi-quote-nesting-level*))
                         (*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
                    (with-local-readtable

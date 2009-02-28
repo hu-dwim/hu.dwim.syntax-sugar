@@ -15,7 +15,7 @@
    #:system-connection-with-readtable
    #:define-syntax
    #:*toplevel-readtable*
-   #:*quasi-quote-depth*
+   #:*quasi-quote-lexical-depth*
    #:*quasi-quote-nesting-level*
    #:get-macro-character*
    #:with-local-readtable
