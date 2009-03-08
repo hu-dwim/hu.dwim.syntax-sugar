@@ -49,14 +49,10 @@
 (defclass system-connection-with-readtable (asdf::system-connection readtable-function-mixin)
   ())
 
-(defmethod asdf:perform :around ((op asdf:operation) (component cl-source-file-with-readtable))
-  (bind ((*readtable* *readtable*)
-         (system (loop :for parent = (asdf:component-parent component)
-                                  :then (asdf:component-parent parent)
-                       :while parent
-                       :when (typep parent 'asdf:system)
-                       :return parent))
-         (setup-readtable-function (or (setup-readtable-function-of component)
+(defun maybe-funcall-setup-readtable-function (system &key component)
+  (setf system (asdf:find-system system)) ; safe to call both with symbols and system instances
+  (bind ((setup-readtable-function (or (when component
+                                         (setup-readtable-function-of component))
                                        (setup-readtable-function-of system))))
     (when setup-readtable-function
       (unless (position #\: (string setup-readtable-function) :test #'char=)
@@ -68,6 +64,15 @@
                (fdefinition
                 (read-from-string
                  (string-upcase setup-readtable-function))))
-        (funcall it)))
+        (funcall it)))))
+
+(defmethod asdf:perform :around ((op asdf:operation) (component cl-source-file-with-readtable))
+  (bind ((*readtable* *readtable*)
+         (system (loop :for parent = (asdf:component-parent component)
+                                  :then (asdf:component-parent parent)
+                       :while parent
+                       :when (typep parent 'asdf:system)
+                       :return parent)))
+    (maybe-funcall-setup-readtable-function system :component component)
     (call-next-method)))
 
