@@ -100,7 +100,7 @@
                  (log "TOPLEVEL-QUASI-QUOTE-READER entering")
                  (setf previous-reader-on-comma (get-macro-character #\,))
                  (multiple-value-prog1
-                     (read-quasi-quote nil stream)
+                     (values (read-quasi-quote nil stream) t)
                    (log "TOPLEVEL-QUASI-QUOTE-READER leaving")))
                (read-using-previous-reader (stream char)
                  (log "READ-USING-PREVIOUS-READER entering, previous-reader-on-backtick: ~A, previous-reader-on-comma: ~A" previous-reader-on-backtick previous-reader-on-comma)
@@ -124,12 +124,12 @@
                                (string= (string-downcase name) (string-downcase dispatched-quasi-quote-name)))
                            (bind ((*dispatched-quasi-quote-name* nil))
                              ;; ok, we've got a match, read it in.
-                             (read-quasi-quote t stream))
+                             (values (read-quasi-quote t stream) t))
                            (bind ((*dispatched-quasi-quote-name* name))
                              ;; FIXME this will do something horribly wrong for a `foo()
                              ;; if there's no handler for it and the default reader is called.
-                             (read-using-previous-reader stream char))))
-                     (read-using-previous-reader stream char)))
+                             (values (read-using-previous-reader stream char) nil))))
+                     (values (read-using-previous-reader stream char) nil)))
                (read-quasi-quoted-body (stream)
                  (log "READ-QUASI-QUOTED-BODY entering")
                  (if (and body-reader
