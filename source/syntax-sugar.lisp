@@ -1,13 +1,13 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
 (defvar *toplevel-readtable* nil
-  "This is bound to the toplevel *readtable* by all the readers in cl-syntax-sugar. This is useful for example to restore the original readtable-case at random point in the nested readers.")
+  "This is bound to the toplevel *readtable* by all the readers in hu.dwim.syntax-sugar. This is useful for example to restore the original readtable-case at random point in the nested readers.")
 
 (defmacro define-syntax (&whole whole name args &body body)
   (bind (((name &key readtime-wrapper-result-transformer) (ensure-list name))

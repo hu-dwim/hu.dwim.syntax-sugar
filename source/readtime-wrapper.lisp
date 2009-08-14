@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
 (export '(with-package with-readtable-case with-preserved-readtable-case))
 

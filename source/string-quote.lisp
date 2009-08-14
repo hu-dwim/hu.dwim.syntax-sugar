@@ -1,12 +1,12 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
-(define-syntax string-quote (start-character end-character &key transformer)
+(define-syntax string-quote (&key (start-character #\｢) (end-character #\｣) transformer)
   "A simple string quote that unconditionally reads all characters until END-CHARACTER into a string."
   (bind ((reader (make-string-quote-reader end-character transformer)))
     (set-macro-character start-character reader t *readtable*)))

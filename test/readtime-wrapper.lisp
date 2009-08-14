@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar-test)
+(in-package :hu.dwim.syntax-sugar.test)
 
 (defsuite* (test/readtime-wrapper :in test))
 
@@ -19,17 +19,17 @@
                body)))
 
 (define-readtime-wrapper-test test/readtime-wrapper/with-package ()
-  (eq 'cl-syntax-sugar::foo
-      "{(with-package :cl-syntax-sugar)
+  (eq 'hu.dwim.syntax-sugar::foo
+      "{(with-package :hu.dwim.syntax-sugar)
         foo}")
   (equal '(progn
-           cl-syntax-sugar::foo
-           cl-syntax-sugar::bar)
-         "{(with-package :cl-syntax-sugar)
+           hu.dwim.syntax-sugar::foo
+           hu.dwim.syntax-sugar::bar)
+         "{(with-package :hu.dwim.syntax-sugar)
            foo
            bar}")
   (string= "foo"
-           "{(with-package :cl-syntax-sugar)
+           "{(with-package :hu.dwim.syntax-sugar)
              \"foo\"}"))
 
 (define-readtime-wrapper-test test/readtime-wrapper/sharp-boolean ()

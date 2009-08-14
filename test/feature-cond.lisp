@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar-test)
+(in-package :hu.dwim.syntax-sugar.test)
 
 (defsuite* (test/feature-cond :in test))
 
@@ -49,10 +49,10 @@
   (() "default"))
 
 (define-feature-cond-test test/feature-cond/with-custom-expressions
-    ｢#*(((and :foo (find-symbol "DEFTEST" :stefil)) "(and :foo (find-symbol '#:deftest :stefil))")
+    ｢#*(((and :foo (find-symbol "DEFTEST" :hu.dwim.stefil)) "(and :foo (find-symbol '#:deftest :hu.dwim.stefil))")
         ((and (or :foo (< 5 10)) :baz)  "(and (or :foo (< 5 10)) :baz)")
         ((or :foo :bar t) "(or :foo :bar t)"))｣
-  ((:foo) "(and :foo (find-symbol '#:deftest :stefil))")
+  ((:foo) "(and :foo (find-symbol '#:deftest :hu.dwim.stefil))")
   ((:baz) "(and (or :foo (< 5 10)) :baz)")
   ((:bar) "(or :foo :bar t)")
   (() "(or :foo :bar t)"))

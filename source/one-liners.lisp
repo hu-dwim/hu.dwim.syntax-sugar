@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
 (define-syntax sharp-boolean ()
   "This syntax reads \"#t\" as COMMON-LISP:T and \"#f\" as COMMON-LISP:NIL"
@@ -20,3 +20,11 @@
       (setf nonterminating? t))
     (values fn nonterminating?)))
 
+(defun sharp-comment-reader (s c n)
+  (declare (ignore c n))
+  (read s nil nil t)
+  (values))
+
+(define-syntax sharp-comment ()
+  "This syntax allows \"#;\" to be used to uncomment a whole sexp."
+  (set-dispatch-macro-character #\# #\; #'sharp-comment-reader))

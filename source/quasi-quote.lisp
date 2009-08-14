@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
 (defparameter *quasi-quote-lexical-depth* 0
   "The absolute level of read-time (lexical) nesting of the quasi-quote readers. It does not decrease at unquotes.")

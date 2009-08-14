@@ -1,13 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar-test.sharp-l)
-
-(eval-when (:compile-toplevel)
-  (setup-readtable))
+(in-package :hu.dwim.syntax-sugar.test)
 
 (defsuite* (test/lambda/sharp-l :in test/lambda))
 

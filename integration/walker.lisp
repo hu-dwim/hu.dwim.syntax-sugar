@@ -1,13 +1,13 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :cl-syntax-sugar)
+(in-package :hu.dwim.syntax-sugar)
 
 (define-syntax lambda-with-bang-args (&key dispatch-character sub-dispatch-character
-                                           start-character end-character)
+                                           (start-character #\[) (end-character #\]))
   "Reader macro for simple lambdas.
 
 This read macro reads exactly one form and serves to eliminate
@@ -19,16 +19,20 @@ parameter of the lambda.
 Examples:
 
 #L(foo) ==> (lambda () (foo)).
+[foo] ==> (lambda () (foo)).
 
 #L(foo !1) ==> (lambda (!1) (foo !1))
+[foo !1] ==> (lambda (!1) (foo !1))
 
 #L(foo (bar !2) !1) ==> (lambda (!1 !2) (foo (bar !2) !1))
+[foo (bar !2) !1] ==> (lambda (!1 !2) (foo (bar !2) !1))
 
 All arguments are declared ignorable. So if there is a reference
 to an argument !X but not !(x-1) we still take X arguments, but x
 - 1 is ignored. Examples (sans the ignorable declarations):
 
 #L(foo !2) ==> (lambda (!1 !2) (foo !2))
+[foo !2] ==> (lambda (!1 !2) (foo !2))
 
 We can specify exactly how many arguments to take by using the
 read macro's prefix parameter. NB: this is only neccessary if the
@@ -64,7 +68,9 @@ that adds its two arguments."
   "Enables the LAMBDA-WITH-BANG-ARGS syntax on #L(+ !1 !2)"
   (set-lambda-with-bang-args-syntax-in-readtable
    :dispatch-character #\#
-   :sub-dispatch-character #\L))
+   :sub-dispatch-character #\L
+   :start-character nil
+   :end-character nil))
 
 (defun make-lambda-with-bang-args-reader (end-character)
   (if end-character
@@ -100,25 +106,25 @@ that adds its two arguments."
            ,form)))))
 
 (defun find-highest-bang-var (form env)
-  (with-walker-configuration (:undefined-reference-handler nil)
+  (hu.dwim.walker:with-walker-configuration (:undefined-reference-handler nil)
     (flet ((bang-var-p (form)
              (and (starts-with #\! (symbol-name form) :test #'char=)
                   (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
            (collect-variable-references (top-form)
              (let ((result (list)))
-               (map-ast (lambda (form)
-                          (when (typep form '(or free-variable-reference-form
-                                              lexical-variable-reference-form))
-                            (push form result))
-                          (if (typep form 'lambda-function-form)
-                              nil ; don't descent any deeper
-                              form))
-                        top-form)
+               (hu.dwim.walker:map-ast (lambda (form)
+                                         (when (typep form '(or hu.dwim.walker:free-variable-reference-form
+                                                                hu.dwim.walker:lexical-variable-reference-form))
+                                           (push form result))
+                                         (if (typep form 'hu.dwim.walker:lambda-function-form)
+                                             nil ; don't descent any deeper
+                                             form))
+                                       top-form)
                result)))
       (or (loop
              :for var-form :in (collect-variable-references
-                                (walk-form form nil (make-walk-environment env)))
-             :for var = (name-of var-form)
+                                (hu.dwim.walker:walk-form form nil (hu.dwim.walker:make-walk-environment env)))
+             :for var = (hu.dwim.walker:name-of var-form)
              :when (bang-var-p var)
-               :maximize (bang-var-p var))
+             :maximize (bang-var-p var))
           0))))
