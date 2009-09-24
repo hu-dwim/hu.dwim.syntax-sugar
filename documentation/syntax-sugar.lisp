@@ -6,9 +6,6 @@
 
 (in-package :hu.dwim.syntax-sugar.documentation)
 
-(def layered-method make-system-description ((system (eql (find-system :hu.dwim.syntax-sugar))))
-  "TODO")
-
 ;; TODO: emacs documentation
 ;; to use from your init.el:
 ;; (add-to-list 'load-path (expand-file-name "~/workspace/hu.dwim.syntax-sugar/emacs/"))
