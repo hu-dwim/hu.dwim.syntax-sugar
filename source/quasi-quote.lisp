@@ -84,7 +84,7 @@
   (when (and dispatched-quasi-quote-name
              end-character)
     (error "What?! dispatched-quasi-quote is always installed on #\` and should not have an end-character..."))
-  (macrolet ((log (message &rest args)
+  (macrolet ((debug-log (message &rest args)
                (declare (ignorable message args))
                #+nil
                `(progn
@@ -97,13 +97,13 @@
            (previous-reader-on-comma nil))
       (labels ((toplevel-quasi-quote-reader (stream &optional char1 char2)
                  (declare (ignore char1 char2))
-                 (log "TOPLEVEL-QUASI-QUOTE-READER entering")
+                 (debug-log "TOPLEVEL-QUASI-QUOTE-READER entering")
                  (setf previous-reader-on-comma (get-macro-character #\,))
                  (multiple-value-prog1
                      (values (read-quasi-quote nil stream) t)
-                   (log "TOPLEVEL-QUASI-QUOTE-READER leaving")))
+                   (debug-log "TOPLEVEL-QUASI-QUOTE-READER leaving")))
                (read-using-previous-reader (stream char)
-                 (log "READ-USING-PREVIOUS-READER entering, previous-reader-on-backtick: ~A, previous-reader-on-comma: ~A" previous-reader-on-backtick previous-reader-on-comma)
+                 (debug-log "READ-USING-PREVIOUS-READER entering, previous-reader-on-backtick: ~A, previous-reader-on-comma: ~A" previous-reader-on-backtick previous-reader-on-comma)
                  (assert previous-reader-on-comma)
                  (if previous-reader-on-backtick
                      (with-local-readtable
@@ -111,7 +111,7 @@
                        (funcall previous-reader-on-backtick stream char))
                      (simple-reader-error stream "No dispatched quasi-quote reader with name ~S" dispatched-quasi-quote-name)))
                (dispatching-toplevel-quasi-quote-reader (stream char)
-                 (log "DISPATCHING-TOPLEVEL-QUASI-QUOTE-READER entering, *dispatched-quasi-quote-name* ~S" *dispatched-quasi-quote-name*)
+                 (debug-log "DISPATCHING-TOPLEVEL-QUASI-QUOTE-READER entering, *dispatched-quasi-quote-name* ~S" *dispatched-quasi-quote-name*)
                  (assert dispatched?)
                  (assert (char= start-character char))
                  (setf previous-reader-on-comma (get-macro-character #\,))
@@ -131,7 +131,7 @@
                              (values (read-using-previous-reader stream char) nil))))
                      (values (read-using-previous-reader stream char) nil)))
                (read-quasi-quoted-body (stream)
-                 (log "READ-QUASI-QUOTED-BODY entering")
+                 (debug-log "READ-QUASI-QUOTED-BODY entering")
                  (if (and body-reader
                           (not dispatched?))
                      (funcall body-reader stream)
@@ -147,7 +147,7 @@
                            (read-delimited-list end-character stream t))
                          (read stream t nil t))))
                (read-quasi-quote (dispatched? stream)
-                 (log "READ-QUASI-QUOTE entering, unquote-reader on ~S is ~A" unquote-character (get-macro-character* unquote-character *readtable*))
+                 (debug-log "READ-QUASI-QUOTE entering, unquote-reader on ~S is ~A" unquote-character (get-macro-character* unquote-character *readtable*))
                  (bind ((entering-readtable *readtable*)
                         (entering-quasi-quote-nesting-level *quasi-quote-nesting-level*)
                         (*quasi-quote-lexical-depth* (1+ *quasi-quote-lexical-depth*))
@@ -176,7 +176,7 @@
                (make-nested-quasi-quote-reader (entering-quasi-quote-nesting-level)
                  (named-lambda nested-quasi-quote-reader (stream char)
                    (declare (ignore char))
-                   (log "NESTED-QUASI-QUOTE-READER entering")
+                   (debug-log "NESTED-QUASI-QUOTE-READER entering")
                    (assert (>= *quasi-quote-nesting-level* entering-quasi-quote-nesting-level))
                    (bind ((body (read-quasi-quoted-body stream)))
                      (if (functionp nested-quasi-quote-wrapper)
@@ -185,8 +185,8 @@
                (make-unquote-reader (entering-quasi-quote-nesting-level entering-readtable)
                  (named-lambda unquote-reader (stream char)
                    (declare (ignore char))
-                   (log "UNQUOTE-READER entering, *quasi-quote-nesting-level* ~A, entering-quasi-quote-nesting-level ~A"
-                        *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
+                   (debug-log "UNQUOTE-READER entering, *quasi-quote-nesting-level* ~A, entering-quasi-quote-nesting-level ~A"
+                              *quasi-quote-nesting-level* entering-quasi-quote-nesting-level)
                    (with-local-readtable ; this is only needed when actually restoring the original readers, but then it's needed inside the recursive READ call down at the end, so wrap it all up with a copy
                      (bind ((*quasi-quote-nesting-level* (1- *quasi-quote-nesting-level*))
                             (modifier (switch ((peek-char nil stream t nil t) :test 'char=)
@@ -208,11 +208,11 @@
                               (setf (readtable-case *readtable*) (readtable-case entering-readtable)))
                              (:toplevel
                               (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*)))))
-                         (log "UNQUOTE-READER restoring original reader on the unquote char ~S, it is ~A" unquote-character (get-macro-character* unquote-character entering-readtable))
+                         (debug-log "UNQUOTE-READER restoring original reader on the unquote char ~S, it is ~A" unquote-character (get-macro-character* unquote-character entering-readtable))
                          (apply 'set-macro-character unquote-character (multiple-value-list (get-macro-character* unquote-character entering-readtable)))
                          (when end-character
                            (set-macro-character start-character (funcall toplevel-reader-wrapper #'toplevel-quasi-quote-reader))))
-                       (log "UNQUOTE-READER calling READ")
+                       (debug-log "UNQUOTE-READER calling READ")
                        (bind ((body (read stream t nil t)))
                          (if (functionp unquote-wrapper)
                              (funcall unquote-wrapper body modifier)
