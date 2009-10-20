@@ -7,7 +7,7 @@
 (in-package :common-lisp-user)
 
 (defpackage :hu.dwim.syntax-sugar
-  (:use :hu.dwim.common-lisp)
+  (:use :hu.dwim.common)
 
   (:export #:cl-source-file-with-readtable
            #:system-with-readtable
