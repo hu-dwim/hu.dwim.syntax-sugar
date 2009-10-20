@@ -15,7 +15,7 @@
            "Tamás Borbély <tomi.borbely@gmail.com>")
   :licence "BSD / Public domain"
   :description "Various syntax extensions"
-  :depends-on (:hu.dwim.common-lisp)
+  :depends-on (:hu.dwim.common)
   :components ((:module "source"
                 :components ((:file "package")
                              (:file "duplicates" :depends-on ("package"))
