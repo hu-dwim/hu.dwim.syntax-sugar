@@ -6,6 +6,21 @@
 
 (in-package :hu.dwim.syntax-sugar.documentation)
 
+(def project :hu.dwim.syntax-sugar :path (system-pathname :hu.dwim.syntax-sugar))
+
+(def book user-guide (:title "User guide")
+  (chapter (:title "Introduction")
+    "TODO")
+  (chapter (:title "Supported Common Lisp Implementations")
+    (paragraph ()
+      "SBCL"))
+  (chapter (:title "Supported Operating Systems")
+    (paragraph ()
+      "Linux"))
+  (chapter (:title "Tutorial")
+    (paragraph ()
+      "TODO")))
+
 ;; TODO: emacs documentation
 ;; to use from your init.el:
 ;; (add-to-list 'load-path (expand-file-name "~/workspace/hu.dwim.syntax-sugar/emacs/"))
