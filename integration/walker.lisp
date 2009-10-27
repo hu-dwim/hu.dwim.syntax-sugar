@@ -6,6 +6,19 @@
 
 (in-package :hu.dwim.syntax-sugar)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (import '(contextl:with-active-layers
+            hu.dwim.walker:free-variable-reference-form
+            hu.dwim.walker:ignore-undefined-references
+            hu.dwim.walker:lambda-function-form
+            hu.dwim.walker:lexical-variable-reference-form
+            hu.dwim.walker:make-walk-environment
+            hu.dwim.walker:map-ast
+            hu.dwim.walker:name-of
+            hu.dwim.walker:walk-form
+            )
+          :hu.dwim.syntax-sugar))
+
 (define-syntax lambda-with-bang-args (&key dispatch-character sub-dispatch-character
                                            (start-character #\[) (end-character #\]))
   "Reader macro for simple lambdas.
@@ -106,25 +119,25 @@ that adds its two arguments."
            ,form)))))
 
 (defun find-highest-bang-var (form env)
-  (hu.dwim.walker:with-walker-configuration (:undefined-reference-handler nil)
-    (flet ((bang-var-p (form)
+  (with-active-layers (ignore-undefined-references)
+    (flet ((bang-var? (form)
              (and (starts-with #\! (symbol-name form) :test #'char=)
                   (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
            (collect-variable-references (top-form)
              (let ((result (list)))
-               (hu.dwim.walker:map-ast (lambda (form)
-                                         (when (typep form '(or hu.dwim.walker:free-variable-reference-form
-                                                                hu.dwim.walker:lexical-variable-reference-form))
-                                           (push form result))
-                                         (if (typep form 'hu.dwim.walker:lambda-function-form)
-                                             nil ; don't descent any deeper
-                                             form))
-                                       top-form)
+               (map-ast (lambda (form)
+                          (when (typep form '(or free-variable-reference-form
+                                                 lexical-variable-reference-form))
+                            (push form result))
+                          (if (typep form 'lambda-function-form)
+                              nil       ; don't descent any deeper
+                              form))
+                        top-form)
                result)))
       (or (loop
              :for var-form :in (collect-variable-references
-                                (hu.dwim.walker:walk-form form nil (hu.dwim.walker:make-walk-environment env)))
-             :for var = (hu.dwim.walker:name-of var-form)
-             :when (bang-var-p var)
-             :maximize (bang-var-p var))
+                                (walk-form form :environment (make-walk-environment env)))
+             :for var = (name-of var-form)
+             :when (bang-var? var)
+             :maximize (bang-var? var))
           0))))
