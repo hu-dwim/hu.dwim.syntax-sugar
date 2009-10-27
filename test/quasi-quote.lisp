@@ -39,7 +39,7 @@
 (deftest test/quasi-quote/simple ()
   (enable-readtime-wrapper-syntax)
   (bind ((expected '(my-quote
-                     (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))))
+                     (1 2 (my-unquote 3 nil) (my-unquote 4 :splice) 5))))
     (is (equal expected
                (read-from-string
                 "{with-my-quasi-quote-syntax
@@ -81,11 +81,11 @@
 
 (deftest test/quasi-quote/nested ()
   (enable-readtime-wrapper-syntax)
-  (is (equal '(my-quote (1 2 (my-unquote (list 3 (my-quote (4 (my-unquote 5 t)))) nil)))
+  (is (equal '(my-quote (1 2 (my-unquote (list 3 (my-quote (4 (my-unquote 5 :splice)))) nil)))
              (read-from-string
               "{with-my-quasi-quote-syntax
                 `(1 2 ,(list 3 `(4 ,@5)))}")))
-  (is (equal '(my-quote (1 2 (my-quote (3 (my-unquote 4 t) (my-unquote (my-unquote 5 nil) nil)))))
+  (is (equal '(my-quote (1 2 (my-quote (3 (my-unquote 4 :splice) (my-unquote (my-unquote 5 nil) nil)))))
              (read-from-string
               "{(with-my-quasi-quote-syntax)
                 `(1 2 `(3 ,@4 ,,5))}"))))
@@ -102,21 +102,21 @@
                                                :unquote-character #\\;
                                                :splice-character #\\!)
                    [1 2 ;3 ;!4 5]]}]")
-         ((:values value position)))
+         (value nil)
+         (position nil))
     (setf (values value position) (read-from-string input))
     (is (= value 42))
     (setf (values value position) (read-from-string input t nil :start position))
     (is (equal value
                '(progn
-                 (my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))
+                 (my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 :splice) 5))
                  42)))))
-
 
 (defsuite* (test/dispatched-quasi-quote :in test))
 
 (deftest test/dispatched-quasi-quote/simple ()
   (enable-my-dispatched-quasi-quote-syntax)
-  (is (equal '(my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 t) 5))
+  (is (equal '(my-quote (1 2 (my-unquote 3 nil) (my-unquote 4 :splice) 5))
              (read-from-string "`my-qq(1 2 ,3 ,@4 5)")))
   (is (equal '(1 2 3)
              (eval (read-from-string "`(1 2 ,(+ 1 2))")))))

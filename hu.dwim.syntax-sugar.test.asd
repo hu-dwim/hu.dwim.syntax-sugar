@@ -12,10 +12,9 @@
   :class hu.dwim.test-system
   :description "Test suite for hu.dwim.syntax-sugar"
   :depends-on (:hu.dwim.def
-               :hu.dwim.stefil
+               :hu.dwim.stefil+swank
                :hu.dwim.syntax-sugar+hu.dwim.walker
-               :hu.dwim.syntax-sugar.unicode
-               :swank)
+               :hu.dwim.syntax-sugar.unicode)
   :components ((:module "test"
                 :components ((:file "feature-cond" :depends-on ("suite"))
                              (:file "lambda" :depends-on ("suite"))
