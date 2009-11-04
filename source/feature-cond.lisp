@@ -12,6 +12,8 @@
                                   readtable-case)
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))
+  (when (member end-character '(#\Return #\Newline #\Tab #\Space) :test 'equal)
+    (error "~S is an illegal END-CHARACTER for the feature-cond syntax." end-character))
   (bind ((reader (make-feature-cond-reader end-character readtable-case)))
     (cond
       ((and dispatch-character
@@ -20,7 +22,8 @@
          (make-dispatch-macro-character dispatch-character))
        (set-dispatch-macro-character dispatch-character start-character reader *readtable*))
       ((not (null start-character))
-       (set-macro-character start-character reader t *readtable*)))))
+       (set-macro-character start-character reader t *readtable*))
+      (t (error "Don't know how to install feature-cond syntax with the given parameters.")))))
 
 (defun make-feature-cond-reader (end-character readtable-case)
   (labels ((feature-cond-reader (stream char &optional dispatched-char)
