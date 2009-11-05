@@ -26,31 +26,81 @@
       (t (error "Don't know how to install feature-cond syntax with the given parameters.")))))
 
 (defun make-feature-cond-reader (end-character readtable-case)
-  (labels ((feature-cond-reader (stream char &optional dispatched-char)
-             (declare (ignore char dispatched-char))
-             (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
-               (with-local-readtable
-                 (when readtable-case
-                   (setf (readtable-case *readtable*) readtable-case))
-                 (bind ((form (read-body stream)))
-                   (unless (consp form)
-                     (simple-reader-error "Feature-cond expects a list instead of ~S" form))
-                   (loop :for (condition . body) :in form :do
-                      (when (bind (#+sbcl (sb-ext:*evaluator-mode* :interpret))
-                              (eval (process-feature-cond-condition condition)))
-                        (return (cond
-                                  ((not (consp body))
-                                   body)
-                                  ((or (null body)
-                                       (length= 1 body))
-                                   (first body))
-                                  (t `(progn ,@body))))))))))
-           (read-body (stream)
-             (if end-character
-                 (with-local-readtable
-                   (set-syntax-from-char end-character #\) *readtable*)
-                   (read-delimited-list end-character stream t))
-                 (read stream t nil t))))
+  (labels
+      ((debug (format &rest args)
+         (declare (ignorable format args))
+         #+nil (apply #'format *debug-io* format args))
+       (feature-cond-reader (*standard-input* char &optional dispatched-char)
+         (declare (ignore char dispatched-char))
+         ;; we either operate in [(cond1 body1) ((and cond2 cond3) body2)]
+         ;; or in #*((cond1 body1) ((and cond2 cond3) body2)) in which case the end-character is effectively #\)
+         (bind ((*toplevel-readtable* (or *toplevel-readtable* *readtable*)))
+           (with-local-readtable
+             (when readtable-case
+               (setf (readtable-case *readtable*) readtable-case))
+             (labels ((skip-until-open-paren (error-message on-unexpected &key (error-on-eof t))
+                        (loop
+                          :with eof = '#:eof
+                          :for char = (read-char *standard-input* nil eof t)
+                          :do (debug "Skipping at char ~S~%" char)
+                          :when (eq char eof)
+                            :do (progn
+                                  (setf char nil)
+                                  (when error-on-eof
+                                    (error "Unexpected end of file on ~A while ~A" *standard-input* error-message)))
+                          :until (char= char #\( )
+                          :unless (member char '(#\Return #\Newline #\Tab #\Space))
+                            :do (funcall on-unexpected char)))
+                      (process-entry ()
+                        (skip-until-open-paren "trying to read the condition of a feature-cond entry"
+                                               (lambda (char)
+                                                 (debug "Entry, unexpected char ~S~%" char)
+                                                 (when (eq char (or end-character #\) ))
+                                                   (emit-result nil))))
+                        (bind ((raw-condition (aprog1
+                                                  (read *standard-input* t nil t)
+                                                (debug "Raw condition is ~S~%" it)))
+                               (condition (aprog1
+                                              (process-feature-cond-condition raw-condition)
+                                            (debug "Processed condition is ~S~%" it)))
+                               (evaluated-condition (bind (#+sbcl (sb-ext:*evaluator-mode* :interpret))
+                                                      (eval condition))))
+                          (if evaluated-condition
+                              (bind ((result (read-delimited-list #\) *standard-input* t))
+                                     (*read-suppress* t))
+                                (debug "Got a match, result is ~S~%" result)
+                                (loop :named skipping :do
+                                  (skip-until-open-paren "reading entries with *READ-SUPPRESS* bound to T after a match"
+                                                         (lambda (char)
+                                                           (debug "Purging, unexpected char ~S~%" char)
+                                                           (when (eq char #\) )
+                                                             (return-from skipping)))
+                                                         :error-on-eof t)
+                                  (unread-char #\( )
+                                  (debug "Skipping dead entry~%")
+                                  (read))
+                                (emit-result result))
+                              (bind ((*read-suppress* t))
+                                ;; read the body suppressed (i.e. ignore symbols in unknown packages)
+                                (read-delimited-list #\) *standard-input* t)))))
+                      (emit-result (body)
+                        (debug "Emitting ~S~%" body)
+                        (return-from feature-cond-reader
+                          (cond
+                            ((null body)
+                             nil)
+                            ((length= 1 body)
+                             (first body))
+                            (t
+                             `(progn ,@body))))))
+               (unless end-character
+                 ;; we are in dispatch mode, e.g. installed of #*, so look for an open paren for the toplevel expression
+                 (skip-until-open-paren "looking for the beginning of a feature-cond expression"
+                                        (lambda (char)
+                                          (debug "Beginning, unexpected char ~S~%" char)
+                                          (error "Expecting an open paren while processing a feature-cond expression in ~A but got ~S."
+                                                 *standard-input* char))))
+               (loop (process-entry)))))))
     #'feature-cond-reader))
 
 (defun process-feature-cond-condition (input-form)
