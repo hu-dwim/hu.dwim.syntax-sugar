@@ -13,14 +13,16 @@
      ,@body))
 
 (defmacro define-feature-cond-test (name test-form &body tests)
-  (with-unique-names (form)
+  (with-unique-names (form result position)
     `(deftest ,name ()
        (enable-feature-cond-syntax)
        (bind ((,form ,test-form))
          ,@(loop
               :for entry :in tests
-              :collect `(with-features ,(first entry)
-                          (is (equal ,(second entry) (read-from-string ,form)))))))))
+             :collect `(with-features ,(first entry)
+                         (bind (((:values ,result ,position) (read-from-string ,form)))
+                           (is (= (length ,form) ,position))
+                           (is (equal ,(second entry) ,result)))))))))
 
 (define-feature-cond-test test/feature-cond/simple
     ｢#*((:foo "it's foo")
@@ -56,3 +58,10 @@
   ((:baz) "(and (or :foo (< 5 10)) :baz)")
   ((:bar) "(or :foo :bar t)")
   (() "(or :foo :bar t)"))
+
+(define-feature-cond-test test/feature-cond/bug/1
+    ｢#*((:missing 'non-existent-package::zork)
+        (t "default")
+        (noise 'will-it-break?)
+        ((noise and (noise)) (will-it-break?)))｣
+  (() "default"))
