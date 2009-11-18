@@ -23,43 +23,33 @@
                                            (start-character #\[) (end-character #\]))
   "Reader macro for simple lambdas.
 
-This read macro reads exactly one form and serves to eliminate
-the 'boiler' plate text from such lambdas and write only the body
-of the lambda itself. If the form contains any references to
-variables named !1, !2, !3, !n etc. these are bound to the Nth
-parameter of the lambda.
+This read macro reads exactly one form and serves to eliminate the 'boiler' plate text from such lambdas and write only the body of the lambda itself. If the form contains any references to variables named !1, !2, !3, !n etc. these are bound to the Nth parameter of the lambda.
 
 Examples:
 
 #L(foo) ==> (lambda () (foo)).
-[foo] ==> (lambda () (foo)).
+\[foo] ==> (lambda () (foo)).
 
 #L(foo !1) ==> (lambda (!1) (foo !1))
-[foo !1] ==> (lambda (!1) (foo !1))
+\[foo !1] ==> (lambda (!1) (foo !1))
 
 #L(foo (bar !2) !1) ==> (lambda (!1 !2) (foo (bar !2) !1))
-[foo (bar !2) !1] ==> (lambda (!1 !2) (foo (bar !2) !1))
+\[foo (bar !2) !1] ==> (lambda (!1 !2) (foo (bar !2) !1))
 
-All arguments are declared ignorable. So if there is a reference
-to an argument !X but not !(x-1) we still take X arguments, but x
-- 1 is ignored. Examples (sans the ignorable declarations):
+All arguments are declared ignorable. So if there is a reference to an argument N but not to I < N then we still take N arguments, but the the unreferenced arguments at I < N positions are declared to be ignored. Examples (sans the ignorable declarations):
 
 #L(foo !2) ==> (lambda (!1 !2) (foo !2))
-[foo !2] ==> (lambda (!1 !2) (foo !2))
+\[foo !2] ==> (lambda (!1 !2) (foo !2))
 
-We can specify exactly how many arguments to take by using the
-read macro's prefix parameter. NB: this is only neccessary if the
-lambda needs to accept N arguments but only uses N - 1. Example:
+We can specify exactly how many arguments to take by using the read macro's prefix parameter. NB: this is only neccessary if the lambda needs to accept N arguments but only uses N - 1. Example:
 
 #2L(foo !1) ==> (lambda (!1 !2) (foo !1))
 
-When #L forms are nested, !X variables are bound to the innermost
-form. Example:
+When #L forms are nested (which is not advised to keep readability and clarity), !X variables are bound to the innermost form. Example:
 
 #L#L(+ !1 !2) ==> (lambda () (lambda (!1 !2) (+ !1 !2)))
 
-returns a function that takes no arguments and returns a function
-that adds its two arguments."
+returns a function that takes no arguments and returns a function that adds its two arguments."
   (when (and (or dispatch-character sub-dispatch-character)
              (or start-character end-character))
     (error "You may either install this syntax on a dispatching macro character or on start/end characters"))
