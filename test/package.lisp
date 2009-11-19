@@ -4,14 +4,17 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.util)
 
-(defpackage :hu.dwim.syntax-sugar.test
+(def package :hu.dwim.syntax-sugar.test
   (:use :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.stefil
         :hu.dwim.syntax-sugar
         :hu.dwim.syntax-sugar.unicode
         :hu.dwim.walker)
-
-  (:shadow #:deftest))
+  (:shadow #:deftest)
+  (:readtable-setup
+   (enable-sharp-l-syntax) ; TODO convert test/lambda.lisp to use readtime-wrapper-syntax and then delme
+   (enable-readtime-wrapper-syntax)
+   (enable-string-quote-syntax)))

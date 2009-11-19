@@ -14,7 +14,8 @@
   :depends-on (:hu.dwim.def
                :hu.dwim.stefil+swank
                :hu.dwim.syntax-sugar+hu.dwim.walker
-               :hu.dwim.syntax-sugar.unicode)
+               :hu.dwim.syntax-sugar.unicode
+               :hu.dwim.util.test)
   :components ((:module "test"
                 :components ((:file "feature-cond" :depends-on ("suite"))
                              (:file "lambda" :depends-on ("suite"))

@@ -12,9 +12,6 @@
   (enable-readtime-wrapper-syntax)
   (enable-string-quote-syntax))
 
-(register-readtable-for-swank
- '(:hu.dwim.syntax-sugar.test) 'setup-readtable)
-
 (defsuite* (test :in root-suite))
 
 (defmacro deftest (name args &body body)

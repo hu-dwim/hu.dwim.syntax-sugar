@@ -6,9 +6,6 @@
 
 (in-package :hu.dwim.syntax-sugar.test)
 
-(eval-when (:compile-toplevel)
-  (setup-readtable))
-
 (defsuite* (test/lambda :in test))
 
 (deftest test/lambda/installed-on-square-braces ()
