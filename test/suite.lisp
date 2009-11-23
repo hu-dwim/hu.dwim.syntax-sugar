@@ -6,12 +6,6 @@
 
 (in-package :hu.dwim.syntax-sugar.test)
 
-(defun setup-readtable ()
-  ;; these are the readers that we enable in the toplevel test package.
-  (enable-sharp-l-syntax)
-  (enable-readtime-wrapper-syntax)
-  (enable-string-quote-syntax))
-
 (defsuite* (test :in root-suite))
 
 (defmacro deftest (name args &body body)

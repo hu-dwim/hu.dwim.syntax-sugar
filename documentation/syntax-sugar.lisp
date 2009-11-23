@@ -43,10 +43,11 @@
 
 ;;; in your .asd:
 
+;; TODO update after the (def package ...) refactor
+
 (defsystem :foo
   :default-component-class cl-source-file-with-readtable
   :class system-with-readtable
-  :setup-readtable-function "my-package::setup-readtable"
   :components
   (...))
 
@@ -55,12 +56,5 @@
 
 (in-package :my-package)
 
-(defun setup-readtable ()
-  (enable-sharp-boolean-syntax)
-  (enable-readtime-wrapper-syntax))
-
-#+#.(cl:when (cl:find-package "SWANK") '(:and))
-(register-readtable-for-swank
- '(:my-package :my-package-test) 'setup-readtable)
 
 |#
