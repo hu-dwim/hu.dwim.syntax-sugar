@@ -97,6 +97,7 @@
                                 (read-delimited-list #\) *standard-input* t)))))
                       (emit-result (body)
                         (debug "Emitting ~S~%" body)
+                        (removef body nil)
                         (return-from feature-cond-reader
                           (cond
                             ((null body)
