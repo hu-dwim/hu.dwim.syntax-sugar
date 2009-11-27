@@ -38,7 +38,14 @@
            (with-local-readtable
              (when readtable-case
                (setf (readtable-case *readtable*) readtable-case))
-             (labels ((skip-until-open-paren (error-message on-unexpected &key (error-on-eof t))
+             (labels ((skip-until-next-line ()
+                        (loop
+                          :with eof = '#:eof
+                          :for char = (read-char *standard-input* nil eof t)
+                          :do (debug "Skipping until next line, at char ~S~%" char)
+                          :until (or (eq char eof)
+                                     (char= char #\Newline))))
+                      (skip-until-open-paren (error-message on-unexpected &key (error-on-eof t))
                         (loop
                           :with eof = '#:eof
                           :for char = (read-char *standard-input* nil eof t)
@@ -48,9 +55,14 @@
                                   (setf char nil)
                                   (when error-on-eof
                                     (error "Unexpected end of file on ~A while ~A" *standard-input* error-message)))
-                          :until (char= char #\( )
-                          :unless (member char '(#\Return #\Newline #\Tab #\Space))
-                            :do (funcall on-unexpected char)))
+                          :if (char= char #\;)
+                            :do (skip-until-next-line)
+                          :else
+                            :do (progn
+                                  (when (char= char #\( )
+                                    (return))
+                                  (unless (member char '(#\Return #\Newline #\Tab #\Space))
+                                    (funcall on-unexpected char)))))
                       (process-entry ()
                         (skip-until-open-paren "trying to read the condition of a feature-cond entry"
                                                (lambda (char)
