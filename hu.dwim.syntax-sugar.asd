@@ -10,11 +10,7 @@
 
 (defsystem :hu.dwim.syntax-sugar
   :class hu.dwim.system
-  :author ("Levente Mészáros <levente.meszaros@gmail.com>"
-           "Attila Lendvai <attila.lendvai@gmail.com>"
-           "Tamás Borbély <tomi.borbely@gmail.com>")
-  :licence "BSD / Public domain"
-  :description "Various syntax extensions"
+  :description "Various syntax extensions."
   :depends-on (:hu.dwim.common)
   :components ((:module "source"
                 :components ((:file "package")
