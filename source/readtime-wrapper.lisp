@@ -28,10 +28,14 @@ Where SPECIFIER is either a symbol naming a function (available at read time) or
                        (setf (readtable-case *readtable*) (readtable-case *toplevel-readtable*))
                        (ensure-list (read stream t nil t)))))
           (set-syntax-from-char end-character #\) *readtable*)
-          (funcall (bind (#+sbcl(sb-ext:*evaluator-mode* :interpret))
-                     (eval form))
-                   (lambda ()
-                     (read-delimited-list end-character stream t))))))))
+          (if *read-suppress*
+              (progn
+                (read-delimited-list end-character stream t)
+                nil)
+              (funcall (bind (#+sbcl(sb-ext:*evaluator-mode* :interpret))
+                         (eval form))
+                       (lambda ()
+                         (read-delimited-list end-character stream t)))))))))
 
 (defun with-package (package-name)
   "When used as a specifier for the READTIME-WRAPPER syntax, it locally rebinds at read time the current package to PACKAGE-NAME.
