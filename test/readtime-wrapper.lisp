@@ -8,17 +8,27 @@
 
 (defsuite* (test/readtime-wrapper :in test))
 
-(defmacro define-readtime-wrapper-test (name args &body body)
+(def definer readtime-wrapper-test (name args &body body)
   `(deftest ,name ,args
      ,@(mapcar (lambda (entry)
                  (if (member (first entry) '(signals is))
                      entry
                      (bind (((comparator expected string) entry))
                        `(is (,comparator ,expected
-                                         (read-from-string ,string))))))
+                                         (read-from-string/with-readtime-wrapper-syntax ,string))))))
                body)))
 
-(define-readtime-wrapper-test test/readtime-wrapper/with-package ()
+(def function read-from-string/with-readtime-wrapper-syntax (string)
+  (with-local-readtable
+    (enable-readtime-wrapper-syntax)
+    (read-from-string string)))
+
+(def test test/readtime-wrapper/read-suppress ()
+  (is (null (bind ((*read-suppress* t))
+              (finishes (read-from-string/with-readtime-wrapper-syntax
+                         "{(with-package :hu.dwim.syntax-sugar) foo}"))))))
+
+(def readtime-wrapper-test test/readtime-wrapper/with-package ()
   (eq 'hu.dwim.syntax-sugar::foo
       "{(with-package :hu.dwim.syntax-sugar)
         foo}")
@@ -32,7 +42,7 @@
            "{(with-package :hu.dwim.syntax-sugar)
              \"foo\"}"))
 
-(define-readtime-wrapper-test test/readtime-wrapper/sharp-boolean ()
+(def readtime-wrapper-test test/readtime-wrapper/sharp-boolean ()
   (signals reader-error (read-from-string "#t"))
   (eq t
       "{with-sharp-boolean-syntax
