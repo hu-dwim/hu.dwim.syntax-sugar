@@ -16,6 +16,7 @@
          (readtime-wrapper-name (format-symbol *package* "WITH-~A-SYNTAX" name))
          ((:values body declarations documentation) (parse-body body :documentation t :whole whole)))
     `(progn
+       ;; TODO this lambda list processing is very much like the one at with-macro. use alexandria if possible, drop crap from duplicates.lisp
        (defmacro ,enabler-name ,(lambda-list-to-lambda-list-with-quoted-defaults args)
          ,documentation
          `(eval-when (:compile-toplevel :execute)
