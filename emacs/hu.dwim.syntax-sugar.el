@@ -61,7 +61,7 @@
 (defun hu.dwim.syntax-sugar.install-square-bracket-lambda-rule ()
   "Installs some rules that displays [... !1 ...] as λ[... !1 ...] with the brackets colored."
   (font-lock-add-keywords
-   nil `(("\\(\\[\\).*?!.*?\\(\\]\\)"
+   nil `(("\\(\\[\\).*?[^{}]+!.*?[^{}]+\\(\\]\\)"
           (0 (progn
                (add-text-properties (match-beginning 1) (match-end 1) '(display "λ["))
                nil))
