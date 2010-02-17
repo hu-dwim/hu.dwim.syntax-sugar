@@ -108,6 +108,13 @@
       (when condition
         (is (string= (simple-condition-format-control condition) "default reached"))))))
 
+(define-feature-cond-test test/feature-cond/read-suppress
+    ｢#+(cl:or)
+     #*((:missing 'non-existent-package::zork)
+        (t "default"))
+     42｣
+  (() 42))
+
 (define-feature-cond-test test/feature-cond/bug/1
     ｢#*((:missing 'non-existent-package::zork)
         (t "default")
