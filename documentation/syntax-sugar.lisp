@@ -24,7 +24,8 @@
 
 ;; TODO: emacs documentation
 ;; to use from your init.el:
-;; (add-to-list 'load-path (expand-file-name "~/workspace/hu.dwim.syntax-sugar/emacs/"))
+;; (setq dwim-workspace (getenv "DWIM_WORKSPACE"))
+;; (add-to-list 'load-path (expand-file-name (concat dwim-workspace "/hu.dwim.syntax-sugar/emacs/")))
 ;; (require 'hu.dwim.syntax-sugar)
 
 ;; some interesting unicode characters:
