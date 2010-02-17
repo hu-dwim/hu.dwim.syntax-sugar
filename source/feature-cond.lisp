@@ -71,30 +71,32 @@
                                                    (emit-result nil))))
                         (bind ((raw-condition (aprog1
                                                   (read *standard-input* t nil t)
-                                                (debug "Raw condition is ~S~%" it)))
-                               (condition (aprog1
-                                              (process-feature-cond-condition raw-condition)
-                                            (debug "Processed condition is ~S~%" it)))
-                               (evaluated-condition (bind (#+sbcl (sb-ext:*evaluator-mode* :interpret))
-                                                      (eval condition))))
-                          (if evaluated-condition
-                              (bind ((result (read-delimited-list #\) *standard-input* t))
-                                     (*read-suppress* t))
-                                (debug "Got a match, result is ~S~%" result)
-                                (loop :named skipping :do
-                                  (skip-until-open-paren "reading entries with *READ-SUPPRESS* bound to T after a match"
-                                                         (lambda (char)
-                                                           (debug "Purging, unexpected char ~S~%" char)
-                                                           (when (eq char #\) )
-                                                             (return-from skipping)))
-                                                         :error-on-eof t)
-                                  (unread-char #\( )
-                                  (debug "Skipping dead entry~%")
-                                  (read))
-                                (emit-result result))
-                              (bind ((*read-suppress* t))
-                                ;; read the body suppressed (i.e. ignore symbols in unknown packages)
-                                (read-delimited-list #\) *standard-input* t)))))
+                                                (debug "Raw condition is ~S~%" it))))
+                          (if *read-suppress*
+                              (read-delimited-list #\) *standard-input* t)
+                              (bind ((condition (aprog1
+                                                    (process-feature-cond-condition raw-condition)
+                                                  (debug "Processed condition is ~S~%" it)))
+                                     (evaluated-condition (bind (#+sbcl (sb-ext:*evaluator-mode* :interpret))
+                                                            (eval condition))))
+                                (if evaluated-condition
+                                    (bind ((result (read-delimited-list #\) *standard-input* t))
+                                           (*read-suppress* t))
+                                      (debug "Got a match, result is ~S~%" result)
+                                      (loop :named skipping :do
+                                        (skip-until-open-paren "reading entries with *READ-SUPPRESS* bound to T after a match"
+                                                               (lambda (char)
+                                                                 (debug "Purging, unexpected char ~S~%" char)
+                                                                 (when (eq char #\) )
+                                                                   (return-from skipping)))
+                                                               :error-on-eof t)
+                                        (unread-char #\( )
+                                        (debug "Skipping dead entry~%")
+                                        (read))
+                                      (emit-result result))
+                                    (bind ((*read-suppress* t))
+                                      ;; read the body suppressed (i.e. ignore symbols in unknown packages)
+                                      (read-delimited-list #\) *standard-input* t)))))))
                       (emit-result (body)
                         (debug "Emitting ~S~%" body)
                         (removef body nil)
