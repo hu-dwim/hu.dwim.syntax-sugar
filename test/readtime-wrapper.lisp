@@ -19,9 +19,10 @@
                body)))
 
 (def function read-from-string/with-readtime-wrapper-syntax (string)
-  (with-local-readtable
-    (enable-readtime-wrapper-syntax)
-    (read-from-string string)))
+  (with-standard-readtable
+    (bind ((*package* (find-package :hu.dwim.syntax-sugar.test)))
+      (enable-readtime-wrapper-syntax)
+      (read-from-string string))))
 
 (def test test/readtime-wrapper/read-suppress ()
   (is (null (bind ((*read-suppress* t))
@@ -43,11 +44,11 @@
              \"foo\"}"))
 
 (def readtime-wrapper-test test/readtime-wrapper/sharp-boolean ()
-  (signals reader-error (read-from-string "#t"))
+  (signals reader-error (read-from-string/with-readtime-wrapper-syntax "#t"))
+  (signals reader-error (read-from-string/with-readtime-wrapper-syntax "#f"))
   (eq t
       "{with-sharp-boolean-syntax
         #t}")
   (eq nil
       "{with-sharp-boolean-syntax
-        #f}")
-  (signals reader-error (read-from-string "#f")))
+        #f}"))

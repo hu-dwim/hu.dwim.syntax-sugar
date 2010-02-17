@@ -13,9 +13,10 @@
      ,@body))
 
 (defun read-from-string/with-feature-cond-syntax (string)
-  (with-local-readtable
-    (enable-feature-cond-syntax)
-    (read-from-string string)))
+  (with-standard-readtable
+    (bind ((*package* (find-package :hu.dwim.syntax-sugar.test)))
+      (enable-feature-cond-syntax)
+      (read-from-string string))))
 
 (defmacro define-feature-cond-test (name test-form &body tests)
   (with-unique-names (form result position)
