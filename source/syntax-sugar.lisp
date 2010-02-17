@@ -45,6 +45,12 @@
   `(bind ((*readtable* (copy-readtable *readtable*)))
      ,@body))
 
+(defmacro with-standard-readtable (&body body)
+  "Rebind a copy of the standard *readtable*."
+  `(bind ((*readtable* (with-standard-io-syntax
+                         (copy-readtable *readtable*))))
+     ,@body))
+
 (defun list-readers (&optional (*readtable* *readtable*))
   "A very slow utility for REPL use."
   (loop

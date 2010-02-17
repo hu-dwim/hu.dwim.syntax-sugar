@@ -18,4 +18,5 @@
            #:*quasi-quote-nesting-level*
            #:get-macro-character*
            #:with-local-readtable
+           #:with-standard-readtable
            #:list-readers))
