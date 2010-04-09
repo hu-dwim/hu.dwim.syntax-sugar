@@ -15,6 +15,6 @@
         :hu.dwim.walker)
   (:shadow #:deftest)
   (:readtable-setup
-   (enable-sharp-l-syntax) ; TODO convert test/lambda.lisp to use readtime-wrapper-syntax and then delme
-   (enable-readtime-wrapper-syntax)
-   (enable-string-quote-syntax)))
+   (hu.dwim.syntax-sugar:enable-sharp-l-syntax) ; TODO convert test/lambda.lisp to use readtime-wrapper-syntax and then delme
+   (hu.dwim.syntax-sugar:enable-readtime-wrapper-syntax)
+   (hu.dwim.syntax-sugar:enable-string-quote-syntax)))
