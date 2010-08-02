@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.syntax-sugar.documentation)
 
-(def project :hu.dwim.syntax-sugar :path (system-pathname :hu.dwim.syntax-sugar))
+(def project :hu.dwim.syntax-sugar)
 
 (def book user-guide (:title "User guide")
   (chapter (:title "Introduction")
