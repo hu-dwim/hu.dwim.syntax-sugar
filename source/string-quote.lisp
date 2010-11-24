@@ -24,10 +24,5 @@
       :with base-char? = t
       :for char = (read-char stream t nil t)
       :until (char= char end-character)
-      :do (progn
-            (setf base-char? (and base-char?
-                                  (typep char 'base-char)))
-            (vector-push-extend char result))
-      :finally (return (funcall transformer (if base-char?
-                                                (coerce result 'simple-base-string)
-                                                result))))))
+      :do (vector-push-extend char result)
+      :finally (return (funcall transformer result)))))
