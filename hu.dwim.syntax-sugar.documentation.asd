@@ -11,7 +11,7 @@
 (defsystem :hu.dwim.syntax-sugar.documentation
   :class hu.dwim.documentation-system
   :depends-on (:hu.dwim.syntax-sugar.test
-               :hu.dwim.wui)
+               :hu.dwim.presentation)
   :components ((:module "documentation"
                 :components ((:file "package")
                              (:file "syntax-sugar" :depends-on ("package"))))))
