@@ -38,6 +38,7 @@
                      `(progn
                         ,@result)
                      (first result))))))
+       ;; TODO get rid of this export and integrate with hu.dwim.def
        (export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name)))))
 
 (defmacro with-local-readtable (&body body)
