@@ -100,8 +100,10 @@ returns a function that takes no arguments and returns a function that adds its 
              (intern (format nil "!~D" number) package)))
       (bind ((form body)
              (lambda-args (loop
-                             :for i :upfrom 1 :upto (max (or min-args 0)
-                                                         (find-highest-bang-var form env))
+                             :for i :upfrom 1 :upto (min (max (or min-args 0)
+                                                              (find-highest-bang-var form env))
+                                                         ;; limit it to a reasonable number, because someone deep down my use the same naming convention 
+                                                         10)
                              :collect (make-bang-arg package i))))
         `(lambda ,lambda-args
            ,@(when lambda-args
@@ -110,9 +112,10 @@ returns a function that takes no arguments and returns a function that adds its 
 
 (defun find-highest-bang-var (form env)
   (with-active-layers (ignore-undefined-references)
-    (flet ((bang-var? (form)
-             (and (starts-with #\! (symbol-name form) :test #'char=)
-                  (parse-integer (subseq (symbol-name form) 1) :junk-allowed t)))
+    (flet ((bang-var? (var-name)
+             (and (symbol-package var-name)
+                  (starts-with #\! (symbol-name var-name) :test #'char=)
+                  (parse-integer (subseq (symbol-name var-name) 1) :junk-allowed t)))
            (collect-variable-references (top-form)
              (let ((result (list)))
                (map-ast (lambda (form)
