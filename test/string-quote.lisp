@@ -11,7 +11,7 @@
 (deftest test/string-quote/return-type ()
   (enable-string-quote-syntax)
   (bind ((result (read-from-string "｢alma｣")))
-    (is (typep result 'simple-base-string))
+    (is (typep result 'string))
     (is (string= result "alma")))
   (bind ((result (read-from-string "｢körte｣")))
     (is (typep result 'string))
