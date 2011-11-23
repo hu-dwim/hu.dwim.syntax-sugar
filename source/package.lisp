@@ -7,7 +7,11 @@
 (in-package :common-lisp-user)
 
 (defpackage :hu.dwim.syntax-sugar
-  (:use :hu.dwim.common)
+  (:use :alexandria
+        :anaphora
+        :hu.dwim.common-lisp
+        :iterate
+        :metabang-bind)
 
   (:export #:cl-source-file-with-readtable
            #:define-syntax
