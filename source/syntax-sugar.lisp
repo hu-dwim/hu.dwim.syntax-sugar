@@ -11,9 +11,9 @@
 
 (defmacro define-syntax (&whole whole name args &body body)
   (bind (((name &key readtime-wrapper-result-transformer) (ensure-list name))
-         (enabler-name (format-symbol *package* "ENABLE-~A-SYNTAX" name))
-         (enabler-function-name (format-symbol *package* "SET-~A-SYNTAX-IN-READTABLE" name))
-         (readtime-wrapper-name (format-symbol *package* "WITH-~A-SYNTAX" name))
+         (enabler-name (format-symbol *package* '#:enable-~a-syntax name))
+         (enabler-function-name (format-symbol *package* '#:set-~a-syntax-in-readtable name))
+         (readtime-wrapper-name (format-symbol *package* '#:with-~a-syntax name))
          ((:values body declarations documentation) (parse-body body :documentation t :whole whole)))
     `(progn
        ;; TODO this lambda list processing is very much like the one at with-macro. use alexandria if possible, drop crap from duplicates.lisp
