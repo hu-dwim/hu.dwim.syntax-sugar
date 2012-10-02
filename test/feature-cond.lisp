@@ -69,6 +69,13 @@
   ((:foo) 'not-evaluated)
   (() nil))
 
+(define-feature-cond-test test/feature-cond/values-as-value
+    ｢(progn
+       #*((:foo (values))
+          (t (values))))｣
+  ((:foo) '(progn))
+  (() '(progn)))
+
 (deftest test/feature-cond/auto-progn-wrapping ()
   (bind ((form ｢#*((:foo (+ 2 2)
                          (+ 40 2))
