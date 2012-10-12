@@ -10,6 +10,7 @@
                                   (dispatch-character #\#)
                                   end-character
                                   readtable-case)
+  "Just like CL:COND but at read-time, and in the current package (as opposed to the keyword package as with #+/-)."
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))
   (when (member end-character '(#\Return #\Newline #\Tab #\Space) :test 'equal)
