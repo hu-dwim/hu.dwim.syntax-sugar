@@ -60,7 +60,8 @@
 (deftest test/lambda/sharp-l/block-label-comes-from-lexenv ()
   ;; this test fails on SBCL because the lexenv on SBCL does not contain block names
   ;; see https://bugs.launchpad.net/sbcl/+bug/590076
-  (with-expected-failures* (featurep :sbcl)
+  (with-expected-failures* (or (featurep :sbcl)
+                               (featurep :ccl))
     (is (= 42 (eval/with-sharp-l-test-syntax ｢(block foo
                                                 (funcall [return-from foo 42]))｣)))))
 
