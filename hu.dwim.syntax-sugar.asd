@@ -4,12 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(load-system :hu.dwim.asdf)
-
-(in-package :hu.dwim.asdf)
-
 (defsystem :hu.dwim.syntax-sugar
-  :class hu.dwim.system
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.system"
   :description "Various syntax extensions."
   :depends-on (:hu.dwim.common)
   :components ((:module "source"
