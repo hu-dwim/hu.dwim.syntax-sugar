@@ -130,6 +130,8 @@
                 `(find ,form *features*))
                ((member form '(t otherwise))
                 t)
+               ((null form)
+                nil)
                ((and (not (null form))
                      (symbolp form))
                 (error "To be less confusing feature-cond does not read symbols automatically into the KEYWORD package, please prefix ~S" form)
