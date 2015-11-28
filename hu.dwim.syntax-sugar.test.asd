@@ -8,8 +8,9 @@
   :defsystem-depends-on (:hu.dwim.asdf)
   :class "hu.dwim.asdf:hu.dwim.test-system"
   :depends-on (:hu.dwim.stefil+hu.dwim.def+swank
-               :hu.dwim.syntax-sugar+hu.dwim.walker
-               :hu.dwim.syntax-sugar.unicode)
+               :hu.dwim.syntax-sugar
+               :hu.dwim.syntax-sugar/lambda-with-bang-args
+               :hu.dwim.syntax-sugar/unicode)
   :components ((:module "test"
                 :components ((:file "feature-cond" :depends-on ("suite"))
                              (:file "lambda" :depends-on ("suite"))

@@ -11,7 +11,7 @@
         :hu.dwim.def
         :hu.dwim.stefil
         :hu.dwim.syntax-sugar
-        :hu.dwim.syntax-sugar.unicode
+        :hu.dwim.syntax-sugar/unicode
         :hu.dwim.walker)
   (:shadow #:deftest)
   (:readtable-setup

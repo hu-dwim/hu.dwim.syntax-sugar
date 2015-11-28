@@ -6,7 +6,7 @@
 
 (in-package :common-lisp-user)
 
-(defpackage :hu.dwim.syntax-sugar.unicode
+(defpackage :hu.dwim.syntax-sugar/unicode
   (:use :hu.dwim.common
         :hu.dwim.syntax-sugar)
 

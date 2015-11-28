@@ -19,3 +19,21 @@
                              (:file "readtime-wrapper" :depends-on ("one-liners"))
                              (:file "string-quote" :depends-on ("one-liners"))
                              (:file "syntax-sugar" :depends-on ("duplicates"))))))
+
+(defsystem :hu.dwim.syntax-sugar/lambda-with-bang-args
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.system"
+  :depends-on (:hu.dwim.syntax-sugar
+               :hu.dwim.walker)
+  :components ((:module "source"
+                :components ((:file "lambda-with-bang-args")))))
+
+(defsystem :hu.dwim.syntax-sugar/unicode
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.system"
+  :description "Various unicode syntax extensions."
+  :depends-on (:hu.dwim.syntax-sugar)
+  :components ((:module "source"
+                :components ((:module "unicode"
+                              :components ((:file "package")
+                                           (:file "one-liners" :depends-on ("package"))))))))

@@ -4,23 +4,30 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :hu.dwim.syntax-sugar)
+(cl:defpackage #:hu.dwim.syntax-sugar/lambda
+  (:use :alexandria
+        :anaphora
+        :hu.dwim.common-lisp
+        :hu.dwim.syntax-sugar
+        :metabang-bind
+        :iterate)
+  (:import-from :hu.dwim.walker
+                hu.dwim.walker:free-variable-reference-form
+                hu.dwim.walker:ignore-undefined-references
+                hu.dwim.walker:lambda-function-form
+                hu.dwim.walker:lexical-variable-reference-form
+                hu.dwim.walker:make-walk-environment
+                hu.dwim.walker:map-ast
+                hu.dwim.walker:name-of
+                hu.dwim.walker:walk-form)
+  (:import-from :contextl
+                contextl:with-active-layers))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (import '(contextl:with-active-layers
-            hu.dwim.walker:free-variable-reference-form
-            hu.dwim.walker:ignore-undefined-references
-            hu.dwim.walker:lambda-function-form
-            hu.dwim.walker:lexical-variable-reference-form
-            hu.dwim.walker:make-walk-environment
-            hu.dwim.walker:map-ast
-            hu.dwim.walker:name-of
-            hu.dwim.walker:walk-form
-            )
-          :hu.dwim.syntax-sugar))
+(in-package #:hu.dwim.syntax-sugar/lambda)
 
-(define-syntax lambda-with-bang-args (&key dispatch-character sub-dispatch-character
-                                           (start-character #\[) (end-character #\]))
+(define-syntax (hu.dwim.syntax-sugar::lambda-with-bang-args :export t)
+    (&key dispatch-character sub-dispatch-character
+          (start-character #\[) (end-character #\]))
   "Reader macro for simple lambdas.
 
 This read macro reads exactly one form and serves to eliminate the 'boiler' plate text from such lambdas and write only the body of the lambda itself. If the form contains any references to variables named !1, !2, !3, !n etc. these are bound to the Nth parameter of the lambda.

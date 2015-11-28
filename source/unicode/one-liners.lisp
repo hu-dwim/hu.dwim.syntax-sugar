@@ -4,7 +4,7 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :hu.dwim.syntax-sugar.unicode)
+(in-package :hu.dwim.syntax-sugar/unicode)
 
 (defun Σ (list)
   (reduce #'+ list))
