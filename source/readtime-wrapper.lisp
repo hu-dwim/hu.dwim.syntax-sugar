@@ -8,7 +8,8 @@
 
 (export '(with-package with-readtable-case with-preserved-readtable-case))
 
-(define-syntax readtime-wrapper (&optional (start-character #\{) (end-character #\}))
+(define-syntax (readtime-wrapper :export t)
+    (&optional (start-character #\{) (end-character #\}))
   "A utility read macro for modifying the read table.
 
 The syntax is:

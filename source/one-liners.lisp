@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.syntax-sugar)
 
-(define-syntax sharp-boolean ()
+(define-syntax (sharp-boolean :export t) ()
   "This syntax reads \"#t\" as COMMON-LISP:T and \"#f\" as COMMON-LISP:NIL"
   (set-dispatch-macro-character #\# #\t (constantly t))
   (set-dispatch-macro-character #\# #\f (constantly nil)))
@@ -25,6 +25,6 @@
   (read s nil nil t)
   (values))
 
-(define-syntax sharp-comment ()
+(define-syntax (sharp-comment :export t) ()
   "This syntax allows \"#;\" to be used to uncomment a whole sexp."
   (set-dispatch-macro-character #\# #\; #'sharp-comment-reader))

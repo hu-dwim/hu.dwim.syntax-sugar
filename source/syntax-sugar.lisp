@@ -10,10 +10,11 @@
   "This is bound to the toplevel *readtable* by all the readers in hu.dwim.syntax-sugar. This is useful for example to restore the original readtable-case at random point in the nested readers.")
 
 (defmacro define-syntax (&whole whole name args &body body)
-  (bind (((name &key readtime-wrapper-result-transformer) (ensure-list name))
-         (enabler-name (format-symbol *package* '#:enable-~a-syntax name))
-         (enabler-function-name (format-symbol *package* '#:set-~a-syntax-in-readtable name))
-         (readtime-wrapper-name (format-symbol *package* '#:with-~a-syntax name))
+  (bind (((name &key readtime-wrapper-result-transformer export) (ensure-list name))
+         (package (the (not null) (symbol-package name)))
+         (enabler-name (format-symbol package '#:enable-~a-syntax name))
+         (enabler-function-name (format-symbol package '#:set-~a-syntax-in-readtable name))
+         (readtime-wrapper-name (format-symbol package '#:with-~a-syntax name))
          ((:values body declarations documentation) (parse-body body :documentation t :whole whole)))
     `(progn
        ;; TODO this lambda list processing is very much like the one at with-macro. use alexandria if possible, drop crap from duplicates.lisp
@@ -38,8 +39,8 @@
                      `(progn
                         ,@result)
                      (first result))))))
-       ;; TODO get rid of this export and integrate with hu.dwim.def
-       (export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name)))))
+       ,@(when export
+           `((export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name) ,(package-name package)))))))
 
 (defmacro with-local-readtable (&body body)
   "Rebind a copy of *readtable*."

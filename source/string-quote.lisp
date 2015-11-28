@@ -6,8 +6,11 @@
 
 (in-package :hu.dwim.syntax-sugar)
 
-;; the defaults, #xFF62 and #xFF63 are ｢ and ｣
-(define-syntax string-quote (&key (start-character #.(code-char #xFF62)) (end-character #.(code-char #xFF63)) (transformer #'identity))
+;; the defaults, #xFF62 and #xFF63, are ｢ and ｣
+(define-syntax (string-quote :export t)
+    (&key (start-character #.(code-char #xFF62))
+          (end-character #.(code-char #xFF63))
+          (transformer #'identity))
   "A simple string quote that unconditionally reads all characters until END-CHARACTER into a string."
   (bind ((transformer (or transformer #'identity)))
     (flet ((string-quote-reader (stream &optional char)

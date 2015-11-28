@@ -12,23 +12,24 @@
 (defparameter *quasi-quote-nesting-level* 0
   "The read-time (lexical) nesting level of the quasi-quote readers, decreases when going through unquotes.")
 
-(define-syntax quasi-quote (quasi-quote-wrapper unquote-wrapper
-                                                &key
-                                                (nested-quasi-quote-wrapper quasi-quote-wrapper)
-                                                start-character
-                                                dispatch-character
-                                                end-character
-                                                (unquote-character #\,)
-                                                (splice-character #\@)
-                                                (destructive-splice-character #\.)
-                                                dispatched-quasi-quote-name
-                                                (toplevel-reader-wrapper #'identity)
-                                                unquote-readtable-case
-                                                ;; body-reader is called with the stream to read the quasi quoted body
-                                                ;; when it's actually time to read the body. by default the normal
-                                                ;; lisp reader is called (with possible readtable customizations).
-                                                body-reader
-                                                readtable-case)
+(define-syntax (quasi-quote :export t)
+    (quasi-quote-wrapper unquote-wrapper
+                         &key
+                         (nested-quasi-quote-wrapper quasi-quote-wrapper)
+                         start-character
+                         dispatch-character
+                         end-character
+                         (unquote-character #\,)
+                         (splice-character #\@)
+                         (destructive-splice-character #\.)
+                         dispatched-quasi-quote-name
+                         (toplevel-reader-wrapper #'identity)
+                         unquote-readtable-case
+                         ;; body-reader is called with the stream to read the quasi quoted body
+                         ;; when it's actually time to read the body. by default the normal
+                         ;; lisp reader is called (with possible readtable customizations).
+                         body-reader
+                         readtable-case)
   (check-type unquote-readtable-case (member nil :toplevel :parent :upcase :downcase :preserve))
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))

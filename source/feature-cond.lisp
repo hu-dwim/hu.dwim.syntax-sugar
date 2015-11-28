@@ -6,10 +6,11 @@
 
 (in-package :hu.dwim.syntax-sugar)
 
-(define-syntax feature-cond (&key (start-character #\*)
-                                  (dispatch-character #\#)
-                                  end-character
-                                  readtable-case)
+(define-syntax (feature-cond :export t)
+    (&key (start-character #\*)
+          (dispatch-character #\#)
+          end-character
+          readtable-case)
   "Just like CL:COND but at read-time, and in the current package (as opposed to the keyword package as with #+/-)."
   (when (and dispatch-character end-character)
     (error "You can not install on both a dispatch character and an end character"))

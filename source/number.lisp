@@ -65,5 +65,5 @@
                        (millió (* value 1000000))
                        (milliárd (* value 1000000000))))))))
 
-(define-syntax sharp-number ()
+(define-syntax (sharp-number :export t) ()
   (set-dispatch-macro-character #\# #\N #'sharp-number-reader))

@@ -67,7 +67,7 @@ returns a function that takes no arguments and returns a function that adds its 
                            (make-lambda-with-bang-args-reader end-character)
                            t *readtable*)))
 
-(define-syntax sharp-l ()
+(define-syntax (hu.dwim.syntax-sugar::sharp-l :export t) ()
   "Enables the LAMBDA-WITH-BANG-ARGS syntax on #L(+ !1 !2)"
   (set-lambda-with-bang-args-syntax-in-readtable
    :dispatch-character #\#
