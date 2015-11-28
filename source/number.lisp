@@ -61,6 +61,7 @@
                        (+ (* value 1000) rational)))
                     (t
                      (ecase (read stream)
+                       ;; TODO FIXME get rid of random hungarian stuff
                        (ezer (* value 1000))
                        (millió (* value 1000000))
                        (milliárd (* value 1000000000))))))))

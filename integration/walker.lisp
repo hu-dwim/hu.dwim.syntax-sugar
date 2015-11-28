@@ -102,7 +102,7 @@ returns a function that takes no arguments and returns a function that adds its 
              (lambda-args (loop
                              :for i :upfrom 1 :upto (min (max (or min-args 0)
                                                               (find-highest-bang-var form env))
-                                                         ;; limit it to a reasonable number, because someone deep down my use the same naming convention 
+                                                         ;; limit it to a reasonable number, because someone deep down my use the same naming convention
                                                          10)
                              :collect (make-bang-arg package i))))
         `(lambda ,lambda-args
