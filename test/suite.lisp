@@ -8,6 +8,8 @@
 
 (defsuite* (test :in root-suite))
 
+(defpackage temporary-package-for-tests)
+
 (defmacro deftest (name args &body body)
   `(hu.dwim.stefil:deftest ,name ,args
      ;; it's not strictly necessary because Stefil rebinds and copies *readtable* but let's
@@ -17,5 +19,5 @@
        (enable-readtime-wrapper-syntax)
        ;; Stefil captures the value of *package* at compile time and binds it when running
        ;; the tests, but again, let's just not test Stefil here...
-       (bind ((*package* (find-package :hu.dwim.syntax-sugar.test)))
+       (bind ((*package* (find-package 'temporary-package-for-tests)))
          ,@body))))
