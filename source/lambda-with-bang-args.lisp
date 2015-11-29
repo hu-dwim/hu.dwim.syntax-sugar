@@ -76,7 +76,7 @@ returns a function that takes no arguments and returns a function that adds its 
 
 (define-syntax (hu.dwim.syntax-sugar::sharp-l :export t) ()
   "Enables the LAMBDA-WITH-BANG-ARGS syntax on #L(+ !1 !2)"
-  (set-lambda-with-bang-args-syntax-in-readtable
+  (hu.dwim.syntax-sugar::set-lambda-with-bang-args-syntax-in-readtable
    :dispatch-character #\#
    :sub-dispatch-character #\L
    :start-character nil
