@@ -24,21 +24,22 @@
             (setf *readtable* (copy-readtable *readtable*))
             (,',enabler-function-name ,,@(lambda-list-to-funcall-list args))
             (values)))
-       (defun ,enabler-function-name ,args
-         ,@declarations
-         ,@body
-         (values))
-       (defun ,readtime-wrapper-name ,args
-         (named-lambda ,readtime-wrapper-name (handler)
-           (,enabler-function-name ,@(lambda-list-to-funcall-list args))
-           (bind ((result (funcall handler))
-                  (result-transformer ,readtime-wrapper-result-transformer))
-             (if result-transformer
-                 (funcall result-transformer result)
-                 (if (rest result)
-                     `(progn
-                        ,@result)
-                     (first result))))))
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (defun ,enabler-function-name ,args
+           ,@declarations
+           ,@body
+           (values))
+         (defun ,readtime-wrapper-name ,args
+           (named-lambda ,readtime-wrapper-name (handler)
+             (,enabler-function-name ,@(lambda-list-to-funcall-list args))
+             (bind ((result (funcall handler))
+                    (result-transformer ,readtime-wrapper-result-transformer))
+               (if result-transformer
+                   (funcall result-transformer result)
+                   (if (rest result)
+                       `(progn
+                          ,@result)
+                       (first result)))))))
        ,@(when export
            `((export '(,enabler-name ,enabler-function-name ,readtime-wrapper-name) ,(package-name package)))))))
 
