@@ -12,6 +12,7 @@
   :components ((:module "source"
                 :components ((:file "duplicates" :depends-on ("package"))
                              (:file "feature-cond" :depends-on ("one-liners"))
+                             (:file "case-preserving" :depends-on ("syntax-sugar"))
                              (:file "number" :depends-on ("syntax-sugar"))
                              (:file "one-liners" :depends-on ("syntax-sugar"))
                              (:file "package")
