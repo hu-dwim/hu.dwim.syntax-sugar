@@ -56,7 +56,7 @@
         (hu.dwim.syntax-sugar.install-substitute-pattern
          (concatenate 'string "[ 	\n()]\\(" name "\\)[ 	\n()]")
          (elt (string char-code) 0)))
-      (incf char-code))))
+      (cl-incf char-code))))
 
 (defun hu.dwim.syntax-sugar.install-square-bracket-lambda-rule ()
   "Installs some rules that displays [... !1 ...] as λ[... !1 ...] with the brackets colored."
